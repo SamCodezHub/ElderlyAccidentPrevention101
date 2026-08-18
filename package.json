@@ -1,0 +1,16 @@
+{
+  "name": "elderly-accident-prevention-101",
+  "version": "1.0.0",
+  "description": "Elderly Accident Prevention System",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

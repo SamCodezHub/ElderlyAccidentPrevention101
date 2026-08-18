@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .bg-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .g1 { top: -200px; right: -100px; width: 500px; height: 500px; background: #6c5ce7; }
+        .g2 { bottom: -200px; left: -100px; width: 400px; height: 400px; background: #00cec9; }
+
+        .topbar {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6c5ce7;
+            box-shadow: 0 0 12px #6c5ce7;
+        }
+
+        .topbar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-chip {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .user-chip strong {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 2px;
+            margin-left: 6px;
+        }
+
+        .role-user {
+            background: rgba(108, 92, 231, 0.15);
+            color: #a29bfe;
+        }
+
+        .role-mod {
+            background: rgba(253, 121, 168, 0.15);
+            color: #fd79a8;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            padding: 6px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+            color: #fd79a8;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 28px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .empty-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 24px;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        .empty-state h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-bottom: 28px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .alert-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-item:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .alert-left {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 3px;
+        }
+
+        .alert-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .alert-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .flag-pill {
+            padding: 3px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .flag-pending {
+            background: rgba(253, 203, 110, 0.15);
+            color: #fdcb6e;
+        }
+
+        .flag-dangerous {
+            background: rgba(253, 121, 168, 0.15);
+            color: #fd79a8;
+        }
+
+        .flag-safe {
+            background: rgba(0, 206, 201, 0.15);
+            color: #00cec9;
+        }
+
+        .no-alerts {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 700px;
+            max-width: 92vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 24px 28px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .modal-header .meta {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 4px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #fd79a8;
+        }
+
+        .modal-body {
+            padding: 20px 28px;
+        }
+
+        .modal-body p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 16px;
+        }
+
+        .graph-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+            height: 350px;
+        }
+
+        .modal-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .stat-val {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .stat-val.vel { color: #fdcb6e; }
+        .stat-val.thr { color: #a29bfe; }
+        .stat-val.pts { color: #00cec9; }
+
+        .modal-actions {
+            padding: 0 28px 24px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-actions button:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-dangerous {
+            background: rgba(253, 121, 168, 0.1) !important;
+            color: #fd79a8 !important;
+            border-color: rgba(253, 121, 168, 0.3) !important;
+        }
+
+        .btn-dangerous:hover {
+            background: rgba(253, 121, 168, 0.2) !important;
+        }
+
+        .btn-safe {
+            background: rgba(0, 206, 201, 0.1) !important;
+            color: #00cec9 !important;
+            border-color: rgba(0, 206, 201, 0.3) !important;
+        }
+
+        .btn-safe:hover {
+            background: rgba(0, 206, 201, 0.2) !important;
+        }
+
+        .flagged-msg {
+            text-align: center;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .flagged-msg.dangerous {
+            color: #fd79a8;
+            background: rgba(253, 121, 168, 0.08);
+        }
+
+        .flagged-msg.safe {
+            color: #00cec9;
+            background: rgba(0, 206, 201, 0.08);
+        }
+
+        .devices-section {
+            margin-top: 32px;
+        }
+
+        .device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .device-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-name {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .device-id {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            font-family: monospace;
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-dot.online { background: #00cec9; box-shadow: 0 0 8px #00cec9; }
+        .status-dot.offline { background: rgba(255, 255, 255, 0.15); }
+
+        .status-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .scan-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            border: 1px dashed rgba(108, 92, 231, 0.4);
+            background: rgba(108, 92, 231, 0.06);
+            color: #a29bfe;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scan-btn:hover {
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.12);
+        }
+
+        .qr-scanner {
+            display: none;
+            margin-top: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 20px;
+        }
+
+        .qr-scanner.open {
+            display: block;
+        }
+
+        .qr-scanner video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .scanner-status {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 12px;
+        }
+
+        .manual-add {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .manual-add h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 12px;
+        }
+
+        .manual-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .manual-row input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .manual-row input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .manual-row input:focus {
+            outline: none;
+            border-color: #6c5ce7;
+        }
+
+        .manual-row button {
+            padding: 10px 20px;
+            border: none;
+            background: #6c5ce7;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .manual-row button:hover {
+            background: #5a4bd1;
+        }
+
+        .add-msg {
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .add-msg.err { display: block; color: #fd79a8; }
+        .add-msg.ok { display: block; color: #00cec9; }
+    </style>
+</head>
+<body>
+    <div class="bg-glow g1"></div>
+    <div class="bg-glow g2"></div>
+
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="brand-dot"></div>
+            <div class="topbar-title">Elderly Accident Prevention</div>
+        </div>
+        <div class="topbar-right">
+            <div class="user-chip">
+                <strong id="uName">User</strong>
+                <span class="role-badge" id="uRole"></span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="content" id="content"></div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <h3 id="mTitle"></h3>
+                    <div class="meta" id="mMeta"></div>
+                </div>
+                <button class="modal-close" id="mClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="mDesc"></p>
+                <div class="graph-container" id="graph3d"></div>
+                <div class="modal-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Max Velocity</div>
+                        <div class="stat-val vel" id="mVel">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Threshold</div>
+                        <div class="stat-val thr" id="mThr">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Points</div>
+                        <div class="stat-val pts" id="mPts">0</div>
+                    </div>
+                </div>
+                <div id="mFlagged"></div>
+            </div>
+            <div class="modal-actions" id="mActions">
+                <button id="mSafe">Safe</button>
+                <button id="mDangerous">Dangerous</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(sessionStorage.getItem('currentUser'));
+        if (!user) window.location.href = 'login.html';
+
+        document.getElementById('uName').textContent = user.username;
+        const roleBadge = document.getElementById('uRole');
+        roleBadge.textContent = user.role;
+        roleBadge.className = 'role-badge ' + (user.role === 'moderator' ? 'role-mod' : 'role-user');
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        });
+
+        const content = document.getElementById('content');
+        const modal = document.getElementById('modal');
+        let activeAnomaly = null;
+        let anomalies = [];
+        let devices = [];
+
+        async function loadData() {
+            anomalies = await window.electronAPI.getAnomalies();
+            devices = await window.electronAPI.getDevices();
+            render();
+        }
+
+        function timeAgo(ts) {
+            const diff = Date.now() - new Date(ts).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + 'm ago';
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return hrs + 'h ago';
+            return Math.floor(hrs / 24) + 'd ago';
+        }
+
+        function render() {
+            if (user.role === 'moderator') {
+                renderModerator();
+            } else {
+                renderUser();
+            }
+        }
+
+        function renderUser() {
+            let html = `
+                <div class="empty-state">
+                    <div class="empty-icon">&#8943;</div>
+                    <h2>Nothing yet</h2>
+                    <p>Register a sensor device to get started.</p>
+                    <button class="scan-btn" id="scanToggle">Add device via QR scan</button>
+                </div>
+                <div class="qr-scanner" id="qrScanner">
+                    <div class="scanner-status" id="scannerStatus">Scanning for QR code...</div>
+                </div>
+                <div class="manual-add">
+                    <h4>Or add manually</h4>
+                    <div class="manual-row">
+                        <input type="text" id="manualId" placeholder="Device ID from QR">
+                        <input type="text" id="manualName" placeholder="Device name">
+                        <button id="manualAddBtn">Add</button>
+                    </div>
+                    <div class="add-msg" id="addMsg"></div>
+                </div>
+            `;
+
+            if (devices.length > 0) {
+                html += `
+                    <div class="devices-section">
+                        <div class="section-label">Registered Devices</div>
+                        <div class="device-list">
+                            ${devices.map(d => {
+                                const seen = d.lastSeen ? (Date.now() - new Date(d.lastSeen).getTime() < 300000) : false;
+                                return `
+                                    <div class="device-item">
+                                        <div>
+                                            <div class="device-name">${d.name}</div>
+                                            <div class="device-id">${d.id}</div>
+                                        </div>
+                                        <div class="device-status">
+                                            <div class="status-dot ${seen ? 'online' : 'offline'}"></div>
+                                            <div class="status-text">${seen ? 'Active' : 'Inactive'}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+
+            document.getElementById('scanToggle').addEventListener('click', () => {
+                const scanner = document.getElementById('qrScanner');
+                scanner.classList.toggle('open');
+                if (scanner.classList.contains('open')) startQRScanner();
+            });
+
+            document.getElementById('manualAddBtn').addEventListener('click', async () => {
+                const id = document.getElementById('manualId').value.trim();
+                const name = document.getElementById('manualName').value.trim();
+                const msg = document.getElementById('addMsg');
+                if (!id) { msg.className = 'add-msg err'; msg.textContent = 'Enter a device ID'; return; }
+                const result = await window.electronAPI.registerDevice({ deviceId: id, name: name || 'Sensor', location: 'Unknown' });
+                if (result.success) {
+                    msg.className = 'add-msg ok';
+                    msg.textContent = 'Device registered';
+                    await loadData();
+                } else {
+                    msg.className = 'add-msg err';
+                    msg.textContent = result.message;
+                }
+            });
+        }
+
+        function renderModerator() {
+            let html = `
+                <div class="section-label">Incoming Alerts</div>
+                <div class="alert-list" id="alertList"></div>
+            `;
+
+            if (devices.length > 0) {
+                html += `
+                    <div class="devices-section">
+                        <div class="section-label">Registered Devices</div>
+                        <div class="device-list">
+                            ${devices.map(d => {
+                                const seen = d.lastSeen ? (Date.now() - new Date(d.lastSeen).getTime() < 300000) : false;
+                                return `
+                                    <div class="device-item">
+                                        <div>
+                                            <div class="device-name">${d.name}</div>
+                                            <div class="device-id">${d.id}</div>
+                                        </div>
+                                        <div class="device-status">
+                                            <div class="status-dot ${seen ? 'online' : 'offline'}"></div>
+                                            <div class="status-text">${seen ? 'Active' : 'Inactive'}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+            const list = document.getElementById('alertList');
+
+            if (anomalies.length === 0) {
+                list.innerHTML = '<div class="no-alerts">No alerts yet</div>';
+                return;
+            }
+
+            anomalies.forEach(a => {
+                const item = document.createElement('div');
+                item.className = 'alert-item';
+                const flagClass = a.flag === 'dangerous' ? 'flag-dangerous' : a.flag === 'safe' ? 'flag-safe' : 'flag-pending';
+                const flagText = a.flag === 'dangerous' ? 'Dangerous' : a.flag === 'safe' ? 'Safe' : 'Pending';
+                item.innerHTML = `
+                    <div class="alert-left">
+                        <div class="alert-title">${a.type.replace(/_/g, ' ')}</div>
+                        <div class="alert-desc">${a.message}</div>
+                    </div>
+                    <div class="alert-right">
+                        <div class="alert-time">${timeAgo(a.timestamp)}</div>
+                        <div class="flag-pill ${flagClass}">${flagText}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => openModal(a));
+                list.appendChild(item);
+            });
+        }
+
+        function openModal(anomaly) {
+            activeAnomaly = anomaly;
+            document.getElementById('mTitle').textContent = anomaly.type.replace(/_/g, ' ');
+            document.getElementById('mMeta').textContent = `${anomaly.deviceName || anomaly.deviceId}  ·  ${timeAgo(anomaly.timestamp)}`;
+            document.getElementById('mDesc').textContent = anomaly.message;
+            document.getElementById('mVel').textContent = anomaly.velocity.toFixed(2) + ' m/s';
+            document.getElementById('mThr').textContent = anomaly.threshold.toFixed(2) + ' m/s';
+            document.getElementById('mPts').textContent = (anomaly.pointCloud || []).length;
+
+            const flagged = document.getElementById('mFlagged');
+            const actions = document.getElementById('mActions');
+
+            if (anomaly.flag === 'dangerous') {
+                flagged.innerHTML = '<div class="flagged-msg dangerous">Flagged as Dangerous</div>';
+                actions.style.display = 'none';
+            } else if (anomaly.flag === 'safe') {
+                flagged.innerHTML = '<div class="flagged-msg safe">Flagged as Safe</div>';
+                actions.style.display = 'none';
+            } else {
+                flagged.innerHTML = '';
+                actions.style.display = 'flex';
+            }
+
+            plot3D(anomaly.pointCloud || []);
+            modal.classList.add('open');
+        }
+
+        function plot3D(pointCloud) {
+            const pts = pointCloud.filter(p => p.x !== undefined && p.y !== undefined && p.z !== undefined);
+
+            if (pts.length === 0) {
+                document.getElementById('graph3d').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.2);font-size:13px;">No point cloud data</div>';
+                return;
+            }
+
+            const velocities = pts.map(p => Math.abs(p.velocity || 0));
+            const maxVel = Math.max(...velocities);
+
+            const trace = {
+                x: pts.map(p => p.x),
+                y: pts.map(p => p.y),
+                z: pts.map(p => p.z),
+                mode: 'markers',
+                type: 'scatter3d',
+                marker: {
+                    size: 3,
+                    color: velocities,
+                    colorscale: [
+                        [0, '#00cec9'],
+                        [0.3, '#6c5ce7'],
+                        [0.6, '#fdcb6e'],
+                        [1, '#fd79a8']
+                    ],
+                    opacity: 0.85,
+                    colorbar: {
+                        title: 'Velocity',
+                        titleside: 'right',
+                        thickness: 12,
+                        len: 0.5,
+                        tickfont: { color: 'rgba(255,255,255,0.4)', size: 10 },
+                        titlefont: { color: 'rgba(255,255,255,0.4)', size: 10 }
+                    }
+                }
+            };
+
+            const layout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { l: 0, r: 0, t: 0, b: 0 },
+                scene: {
+                    xaxis: { title: 'X (m)', color: 'rgba(255,255,255,0.25)', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Y (m)', color: 'rgba(255,255,255,0.25)', gridcolor: 'rgba(255,255,255,0.05)' },
+                    zaxis: { title: 'Z (m)', color: 'rgba(255,255,255,0.25)', gridcolor: 'rgba(255,255,255,0.05)' },
+                    bgcolor: 'rgba(0,0,0,0.2)'
+                },
+                font: { color: 'rgba(255,255,255,0.4)', size: 10 }
+            };
+
+            Plotly.newPlot('graph3d', [trace], layout, { displayModeBar: false, responsive: true });
+        }
+
+        document.getElementById('mClose').addEventListener('click', () => modal.classList.remove('open'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+
+        document.getElementById('mDangerous').addEventListener('click', async () => {
+            if (!activeAnomaly) return;
+            await window.electronAPI.flagAnomaly({ anomalyId: activeAnomaly.id, flag: 'dangerous' });
+            await loadData();
+            modal.classList.remove('open');
+        });
+
+        document.getElementById('mSafe').addEventListener('click', async () => {
+            if (!activeAnomaly) return;
+            await window.electronAPI.flagAnomaly({ anomalyId: activeAnomaly.id, flag: 'safe' });
+            await loadData();
+            modal.classList.remove('open');
+        });
+
+        window.electronAPI.onNewAnomaly((anomaly) => {
+            anomalies.unshift(anomaly);
+            if (user.role === 'moderator') renderModerator();
+        });
+
+        async function startQRScanner() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.playsInline = true;
+                const scanner = document.getElementById('qrScanner');
+                scanner.appendChild(video);
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const status = document.getElementById('scannerStatus');
+
+                async function scan() {
+                    if (!scanner.classList.contains('open')) {
+                        stream.getTracks().forEach(t => t.stop());
+                        return;
+                    }
+                    video.readyState === video.HAVE_ENOUGH_DATA && (() => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                        try {
+                            const code = jsQR ? jsQR(imageData.data, canvas.width, canvas.height) : null;
+                            if (code) {
+                                const data = JSON.parse(code.data);
+                                if (data.deviceId) {
+                                    stream.getTracks().forEach(t => t.stop());
+                                    scanner.classList.remove('open');
+                                    const result = await window.electronAPI.registerDevice({
+                                        deviceId: data.deviceId,
+                                        name: data.deviceName || 'mmWave Sensor',
+                                        location: data.location || 'Unknown'
+                                    });
+                                    if (result.success) {
+                                        loadData();
+                                    }
+                                    return;
+                                }
+                            }
+                        } catch (e) {}
+                    })();
+                    requestAnimationFrame(scan);
+                }
+                scan();
+            } catch (e) {
+                document.getElementById('scannerStatus').textContent = 'Camera not available. Use manual entry below.';
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
