@@ -5,95 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f0f1a;
+            background: #0e0e1a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
         }
 
-        .bg-glow {
+        .glow {
             position: fixed;
-            width: 500px;
-            height: 500px;
             border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.15;
+            filter: blur(140px);
+            opacity: 0.12;
             pointer-events: none;
         }
 
-        .glow-1 {
-            top: -150px;
-            left: -100px;
-            background: #6c5ce7;
-        }
-
-        .glow-2 {
-            bottom: -200px;
-            right: -100px;
-            background: #00cec9;
-        }
-
-        .glow-3 {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fd79a8;
-            opacity: 0.08;
-            width: 600px;
-            height: 600px;
-        }
+        .g1 { top: -200px; left: -100px; width: 500px; height: 500px; background: #6c5ce7; }
+        .g2 { bottom: -200px; right: -100px; width: 400px; height: 400px; background: #00cec9; }
 
         .card {
             position: relative;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255,255,255,0.06);
             padding: 48px 40px;
-            width: 380px;
+            width: 360px;
             z-index: 1;
         }
 
-        .accent-bar {
+        .bar {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #6c5ce7, #00cec9, #fd79a8);
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #6c5ce7, #00cec9);
         }
 
-        h1 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 4px;
-        }
+        h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .sub { font-size: 13px; color: rgba(255,255,255,0.3); margin-bottom: 36px; }
 
-        .subtitle {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.35);
-            margin-bottom: 36px;
-        }
-
-        .field {
-            margin-bottom: 18px;
-        }
+        .field { margin-bottom: 18px; }
 
         .field label {
             display: block;
             font-size: 11px;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255,255,255,0.35);
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -102,52 +62,19 @@
         .field input {
             width: 100%;
             padding: 12px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
             color: #fff;
             font-size: 14px;
             transition: all 0.3s;
         }
 
-        .field input::placeholder {
-            color: rgba(255, 255, 255, 0.2);
-        }
+        .field input::placeholder { color: rgba(255,255,255,0.18); }
 
         .field input:focus {
             outline: none;
             border-color: #6c5ce7;
-            background: rgba(108, 92, 231, 0.06);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
-        }
-
-        .roles {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        .role-btn {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.03);
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .role-btn:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .role-btn.active {
-            border-color: #6c5ce7;
-            background: rgba(108, 92, 231, 0.12);
-            color: #a29bfe;
+            background: rgba(108,92,231,0.06);
         }
 
         .submit {
@@ -160,35 +87,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            letter-spacing: 0.5px;
+            margin-top: 8px;
         }
 
         .submit:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 24px rgba(108, 92, 231, 0.35);
-        }
-
-        .submit:active {
-            transform: translateY(0);
-        }
-
-        .toggle {
-            text-align: center;
-            margin-top: 24px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .toggle a {
-            color: #00cec9;
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .toggle a:hover {
-            color: #55efc4;
+            box-shadow: 0 6px 24px rgba(108,92,231,0.35);
         }
 
         .msg {
@@ -196,37 +100,22 @@
             font-size: 13px;
             margin-bottom: 18px;
             display: none;
-            border-radius: 2px;
-        }
-
-        .msg.err {
-            display: block;
-            background: rgba(253, 121, 168, 0.1);
-            color: #fd79a8;
             border-left: 3px solid #fd79a8;
+            background: rgba(253,121,168,0.08);
+            color: #fd79a8;
         }
 
-        .msg.ok {
-            display: block;
-            background: rgba(0, 206, 201, 0.1);
-            color: #00cec9;
-            border-left: 3px solid #00cec9;
-        }
-
-        #regFields {
-            display: none;
-        }
+        .msg.show { display: block; }
     </style>
 </head>
 <body>
-    <div class="bg-glow glow-1"></div>
-    <div class="bg-glow glow-2"></div>
-    <div class="bg-glow glow-3"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
 
     <div class="card">
-        <div class="accent-bar"></div>
-        <h1 id="title">Welcome back</h1>
-        <p class="subtitle" id="sub">Sign in to continue</p>
+        <div class="bar"></div>
+        <h1>Moderator Login</h1>
+        <p class="sub">Elderly Accident Prevention System</p>
 
         <div id="msg" class="msg"></div>
 
@@ -235,69 +124,17 @@
                 <label>Username</label>
                 <input type="text" id="username" placeholder="Enter username" required>
             </div>
-
             <div class="field">
                 <label>Password</label>
                 <input type="password" id="password" placeholder="Enter password" required>
             </div>
-
-            <div id="regFields">
-                <div class="roles">
-                    <div class="role-btn active" data-role="user">User</div>
-                    <div class="role-btn" data-role="moderator">Moderator</div>
-                </div>
-                <input type="hidden" id="role" value="user">
-            </div>
-
-            <button type="submit" class="submit" id="btn">Sign in</button>
+            <button type="submit" class="submit">Sign in</button>
         </form>
-
-        <div class="toggle">
-            <span id="tText">No account?</span>
-            <a id="tLink">Sign up</a>
-        </div>
     </div>
 
     <script>
         const form = document.getElementById('form');
-        const tLink = document.getElementById('tLink');
-        const tText = document.getElementById('tText');
-        const btn = document.getElementById('btn');
-        const regFields = document.getElementById('regFields');
-        const roleInput = document.getElementById('role');
-        const msgDiv = document.getElementById('msg');
-        const title = document.getElementById('title');
-        const sub = document.getElementById('sub');
-
-        let registering = false;
-
-        tLink.addEventListener('click', () => {
-            registering = !registering;
-            regFields.style.display = registering ? 'block' : 'none';
-            btn.textContent = registering ? 'Create account' : 'Sign in';
-            tText.textContent = registering ? 'Have an account?' : 'No account?';
-            tLink.textContent = registering ? 'Sign in' : 'Sign up';
-            title.textContent = registering ? 'Get started' : 'Welcome back';
-            sub.textContent = registering ? 'Create your account' : 'Sign in to continue';
-            hideMsg();
-        });
-
-        document.querySelectorAll('.role-btn').forEach(b => {
-            b.addEventListener('click', () => {
-                document.querySelectorAll('.role-btn').forEach(x => x.classList.remove('active'));
-                b.classList.add('active');
-                roleInput.value = b.dataset.role;
-            });
-        });
-
-        function showMsg(text, type) {
-            msgDiv.textContent = text;
-            msgDiv.className = 'msg ' + type;
-        }
-
-        function hideMsg() {
-            msgDiv.className = 'msg';
-        }
+        const msg = document.getElementById('msg');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -305,24 +142,20 @@
             const password = document.getElementById('password').value;
 
             try {
-                let result;
-                if (registering) {
-                    result = await window.electronAPI.register({ username, password, role: roleInput.value });
+                const result = await window.electronAPI.login({ username, password });
+                if (result.success && result.user.role === 'moderator') {
+                    sessionStorage.setItem('currentUser', JSON.stringify(result.user));
+                    window.location.href = 'dashboard.html';
+                } else if (result.success) {
+                    msg.textContent = 'Moderator access only';
+                    msg.className = 'msg show';
                 } else {
-                    result = await window.electronAPI.login({ username, password });
-                }
-
-                if (result.success) {
-                    showMsg(result.message, 'ok');
-                    if (!registering && result.user) {
-                        sessionStorage.setItem('currentUser', JSON.stringify(result.user));
-                        setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
-                    }
-                } else {
-                    showMsg(result.message, 'err');
+                    msg.textContent = result.message;
+                    msg.className = 'msg show';
                 }
             } catch (err) {
-                showMsg('Something went wrong', 'err');
+                msg.textContent = 'Something went wrong';
+                msg.className = 'msg show';
             }
         });
     </script>
