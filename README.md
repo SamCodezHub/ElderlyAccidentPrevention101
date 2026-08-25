@@ -1,36 +1,71 @@
 # Elderly Accident Prevention System
 
-An intelligent monitoring and emergency response system for elderly individuals, combining mmWave radar sensors with a real-time dispatcher dashboard. Designed for deployment in Bangalore, India.
+An intelligent monitoring and emergency response system for elderly individuals, combining mmWave radar sensors with real-time caregiver and moderator dashboards. Designed for deployment in Bangalore, India.
 
 ## Overview
 
-The system detects falls and anomalous movements using mmWave radar sensors mounted in monitored areas. When an anomaly is detected, a moderator is alerted through a desktop dashboard and can dispatch the nearest healthcare team to the patient's location. The team transports the patient to the nearest hospital, with all movement tracked in real-time on a map using actual road routing.
+The system detects falls and anomalous movements using mmWave radar sensors mounted in monitored areas. Caregivers register through a dedicated app, upload a floor plan, and receive AI-placed sensor recommendations. When an anomaly is detected, a moderator is alerted through a dispatcher dashboard and can deploy healthcare teams. Teams follow real Bangalore road routes to reach patients and transport them to the nearest hospital, with all movement tracked live on a map.
 
 ## Architecture
 
 ```
 ElderlyAccidentPrevention101/
-├── moderator_app/          # Electron desktop application
-│   ├── main.js             # Electron main process, IPC handlers
-│   ├── preload.js          # Context bridge for renderer
-│   ├── login.html          # Moderator login page
-│   ├── dashboard.html      # Main dashboard (map, alerts, teams)
-│   ├── data/               # Account storage
+├── moderator_app/            # Moderator dispatcher Electron app
+│   ├── main.js               # Electron main process, IPC handlers
+│   ├── preload.js            # Context bridge for renderer
+│   ├── login.html            # Moderator login page
+│   ├── dashboard.html        # Map, alerts, team dispatch, transport tracking
+│   ├── data/                 # Account storage
 │   └── package.json
-├── pi_backend/             # Raspberry Pi Zero 2W sensor backend
-│   ├── server.py           # Sensor data collection & transmission
-│   ├── mmwave_reader.py    # mmWave radar serial parser & anomaly detection
-│   ├── qr_generator.py     # Device registration QR code generator
-│   ├── config.py           # Device configuration management
+├── user_app/                 # Caregiver / family member Electron app
+│   ├── main.js               # Electron main process, session management
+│   ├── preload.js            # Context bridge (auth, profile, onboarding)
+│   ├── auth-store.js         # Authentication, sessions, password hashing
+│   ├── sample-plan.js        # Sample floor plan SVG & AI sensor placement
+│   ├── login.html            # Caregiver login / registration
+│   ├── onboarding.html       # Home setup wizard (senior info, floor plan, sensors)
+│   ├── family-dashboard.html # Family monitoring view
+│   ├── dashboard.html        # Moderator map dashboard (shared)
+│   ├── data/                 # User data store
+│   └── package.json
+├── pi_backend/               # Raspberry Pi Zero 2W sensor backend
+│   ├── server.py             # Sensor data collection & transmission
+│   ├── mmwave_reader.py      # mmWave radar serial parser & anomaly detection
+│   ├── qr_generator.py       # Device registration QR code generator
+│   ├── config.py             # Device configuration management
 │   └── requirements.txt
 └── README.md
 ```
 
 ## Components
 
-### Moderator Dashboard (Electron App)
+### Caregiver App (User App)
 
-A dark-themed desktop application for emergency dispatch operators.
+A warm, earth-toned Electron desktop application for family members and caregivers.
+
+**Features:**
+
+- **Login & Registration** — Email/phone-based authentication with password hashing (scrypt), session tokens, and remember-me support. Demo account available for quick access.
+- **Onboarding Wizard** — Multi-step home setup:
+  - Senior profile (name, age, medical conditions, mobility level, language)
+  - Emergency contacts and physician details
+  - Residence information (building type, floor, lockbox details)
+  - Floor plan upload with AI-powered sensor placement analysis
+- **Floor Plan Analysis** — Upload a floor plan image and receive AI-generated sensor placement recommendations. The system classifies zones by risk level (critical / high / medium / low) and places mmWave sensors optimally.
+- **Family Dashboard** — Monitoring view showing senior status, sensor health, hardware state (mmWave radar, smart lock), and notification preferences.
+- **Smart Lock Integration** — Rotating OTP generation for smart lock access with configurable rotation intervals.
+- **Demo Mode** — Pre-seeded demo account with a complete 2BHK floor plan, 5 placed sensors, and populated senior profile for instant walkthrough.
+
+**Demo Credentials:**
+
+| Field | Value |
+|---|---|
+| Email | `rehan.khan@eldercare.app` |
+| Password | `rehan@402` |
+
+### Moderator Dashboard (Dispatcher App)
+
+A dark-themed Electron desktop application for emergency dispatch operators.
 
 **Features:**
 
@@ -38,7 +73,7 @@ A dark-themed desktop application for emergency dispatch operators.
 - **Alert Management** — Trigger alerts from sensor devices. Each alert shows in a sidebar list with status badges (Active / Transport / Resolved). Alerts can be classified as false or actual threats.
 - **Device Communication** — Call the device at the alert location to confirm the situation. Send pre-filled SMS messages to the device owner.
 - **Healthcare Team Dispatch** — 8 healthcare teams patrol along real Bangalore roads (OSRM routing). The nearest available team is identified by distance. Deploy a team to an alert and track their movement in real-time.
-- **Hospital Transport** — Automatically selects the nearest hospital from 6 real Bangalore hospital locations. Transport is animated along actual road routes with real-time ETA countdown matching the calculated travel time.
+- **Hospital Transport** — Automatically selects the nearest hospital from 6 real Bangalore hospital locations. Transport is animated along actual road routes with real-time ETA countdown matching the calculated travel time (1 minute of animation per 1 minute of real time).
 - **Live Feed** — Timestamped feed messages showing team status, traffic updates, and hospital handoff events during active transports.
 
 **Color Scheme:**
@@ -84,6 +119,14 @@ A Python backend designed to run on a Raspberry Pi Zero 2W connected to a TI mmW
 - **Python 3.8+** (for pi_backend)
 - **TI mmWave radar sensor** (optional, for real hardware)
 
+### Caregiver App
+
+```bash
+cd user_app
+npm install
+npm start
+```
+
 ### Moderator Dashboard
 
 ```bash
@@ -115,15 +158,21 @@ Edit `pi_backend/config.py` or let it auto-generate `device_config.json` on firs
 - `device_id` — Unique identifier auto-generated as `pi_<hex>`
 - `velocity_threshold` — Minimum velocity (m/s) to flag as potential anomaly
 
-### Dashboard
+### Caregiver App
 
-The dashboard operates as a standalone Electron app. Accounts are stored in `moderator_app/data/accounts.json`. All registered accounts have the `moderator` role.
+User data is stored in `user_app/data/auth-db.json`. Legacy accounts from `moderator_app` are auto-migrated on first launch. Sessions use scrypt password hashing and crypto-based token generation.
+
+### Moderator Dashboard
+
+Accounts are stored in `moderator_app/data/accounts.json`. All registered accounts have the `moderator` role.
 
 ## Technologies
 
-- **Electron** — Desktop application framework
+- **Electron** — Desktop application framework (both apps)
 - **Leaflet** — Interactive map with CartoDB dark tiles
 - **OSRM** — Open Source Routing Machine for real road route calculations
+- **Node.js crypto** — scrypt password hashing, session tokens, OTP generation
 - **Python** — Sensor backend
 - **pyserial** — Serial communication with mmWave radar
 - **NumPy** — Statistical anomaly detection
+- **SVG** — Floor plan rendering and sensor overlay visualization
