@@ -10,13 +10,6 @@ The system detects falls and anomalous movements using mmWave radar sensors moun
 
 ```
 ElderlyAccidentPrevention101/
-├── moderator_app/            # Moderator dispatcher Electron app
-│   ├── main.js               # Electron main process, IPC handlers
-│   ├── preload.js            # Context bridge for renderer
-│   ├── login.html            # Moderator login page
-│   ├── dashboard.html        # Map, alerts, team dispatch, transport tracking
-│   ├── data/                 # Account storage
-│   └── package.json
 ├── user_app/                 # Caregiver / family member Electron app
 │   ├── main.js               # Electron main process, session management
 │   ├── preload.js            # Context bridge (auth, profile, onboarding)
@@ -25,8 +18,15 @@ ElderlyAccidentPrevention101/
 │   ├── login.html            # Caregiver login / registration
 │   ├── onboarding.html       # Home setup wizard (senior info, floor plan, sensors)
 │   ├── family-dashboard.html # Family monitoring view
-│   ├── dashboard.html        # Moderator map dashboard (shared)
+│   ├── dashboard.html        # Moderator map dashboard
 │   ├── data/                 # User data store
+│   └── package.json
+├── moderator_app/            # Standalone moderator dispatcher Electron app
+│   ├── main.js               # Electron main process, IPC handlers
+│   ├── preload.js            # Context bridge for renderer
+│   ├── login.html            # Moderator login page
+│   ├── dashboard.html        # Map, alerts, team dispatch, transport tracking
+│   ├── data/                 # Account storage
 │   └── package.json
 ├── pi_backend/               # Raspberry Pi Zero 2W sensor backend
 │   ├── server.py             # Sensor data collection & transmission
@@ -39,13 +39,13 @@ ElderlyAccidentPrevention101/
 
 ## Components
 
-### Caregiver App (User App)
+### Caregiver App (user_app)
 
 A warm, earth-toned Electron desktop application for family members and caregivers.
 
 **Features:**
 
-- **Login & Registration** — Email/phone-based authentication with password hashing (scrypt), session tokens, and remember-me support. Demo account available for quick access.
+- **Login & Registration** — Email/phone-based authentication with scrypt password hashing, session tokens, and remember-me support. Demo account available for quick access.
 - **Onboarding Wizard** — Multi-step home setup:
   - Senior profile (name, age, medical conditions, mobility level, language)
   - Emergency contacts and physician details
@@ -54,7 +54,8 @@ A warm, earth-toned Electron desktop application for family members and caregive
 - **Floor Plan Analysis** — Upload a floor plan image and receive AI-generated sensor placement recommendations. The system classifies zones by risk level (critical / high / medium / low) and places mmWave sensors optimally.
 - **Family Dashboard** — Monitoring view showing senior status, sensor health, hardware state (mmWave radar, smart lock), and notification preferences.
 - **Smart Lock Integration** — Rotating OTP generation for smart lock access with configurable rotation intervals.
-- **Demo Mode** — Pre-seeded demo account with a complete 2BHK floor plan, 5 placed sensors, and populated senior profile for instant walkthrough.
+- **Moderator Routing** — Automatically routes moderator-role users to the map dashboard.
+- **Demo Mode** — Pre-seeded demo account with a complete 2BHK floor plan, 5 placed sensors, and populated senior profile.
 
 **Demo Credentials:**
 
@@ -63,9 +64,9 @@ A warm, earth-toned Electron desktop application for family members and caregive
 | Email | `rehan.khan@eldercare.app` |
 | Password | `rehan@402` |
 
-### Moderator Dashboard (Dispatcher App)
+### Moderator Dashboard (moderator_app)
 
-A dark-themed Electron desktop application for emergency dispatch operators.
+A dark-themed standalone Electron desktop application for emergency dispatch operators.
 
 **Features:**
 
@@ -73,7 +74,7 @@ A dark-themed Electron desktop application for emergency dispatch operators.
 - **Alert Management** — Trigger alerts from sensor devices. Each alert shows in a sidebar list with status badges (Active / Transport / Resolved). Alerts can be classified as false or actual threats.
 - **Device Communication** — Call the device at the alert location to confirm the situation. Send pre-filled SMS messages to the device owner.
 - **Healthcare Team Dispatch** — 8 healthcare teams patrol along real Bangalore roads (OSRM routing). The nearest available team is identified by distance. Deploy a team to an alert and track their movement in real-time.
-- **Hospital Transport** — Automatically selects the nearest hospital from 6 real Bangalore hospital locations. Transport is animated along actual road routes with real-time ETA countdown matching the calculated travel time (1 minute of animation per 1 minute of real time).
+- **Hospital Transport** — Automatically selects the nearest hospital from 6 real Bangalore hospital locations. Transport is animated along actual road routes with real-time ETA countdown matching the calculated travel time (1 second of animation per 1 minute of ETA).
 - **Live Feed** — Timestamped feed messages showing team status, traffic updates, and hospital handoff events during active transports.
 
 **Color Scheme:**
@@ -160,7 +161,7 @@ Edit `pi_backend/config.py` or let it auto-generate `device_config.json` on firs
 
 ### Caregiver App
 
-User data is stored in `user_app/data/auth-db.json`. Legacy accounts from `moderator_app` are auto-migrated on first launch. Sessions use scrypt password hashing and crypto-based token generation.
+User data is stored in `user_app/data/auth-db.json`. Legacy accounts from `moderator_app/data/accounts.json` are auto-migrated on first launch via the migration function in `auth-store.js`. Sessions use scrypt password hashing and crypto-based token generation.
 
 ### Moderator Dashboard
 
