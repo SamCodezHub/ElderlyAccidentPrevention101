@@ -1181,8 +1181,8 @@
             addFeed(team.name, pickRandom(feedMessages.approaching));
 
             const toPatientRoute = await buildRouteTo(team.lat, team.lng, machine.lat, machine.lng);
-            const patientAnimMs = Math.max(3000, etaToPatient * 1000);
-            const patientTickMs = 300;
+            const patientAnimMs = etaToPatient * 60000;
+            const patientTickMs = 500;
             const patientTotal = Math.round(patientAnimMs / patientTickMs);
             let patientStep = 0;
             const patientIv = setInterval(() => {
@@ -1206,8 +1206,8 @@
                     addFeed(team.name, pickRandom(feedMessages.transporting).replace('{hospital}', hospital.name).replace('{eta}', etaToHospital).replace('{dist}', distToHospital.toFixed(1)));
 
                     const toHospRoute = await buildRouteTo(team.lat, team.lng, hospital.lat, hospital.lng);
-                    const hospAnimMs = Math.max(3000, etaToHospital * 1000);
-                    const hospTickMs = 300;
+                    const hospAnimMs = etaToHospital * 60000;
+                    const hospTickMs = 500;
                     const hospTotal = Math.round(hospAnimMs / hospTickMs);
                     let hospStep = 0;
 
