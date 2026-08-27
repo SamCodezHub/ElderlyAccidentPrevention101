@@ -212,7 +212,7 @@ function ensureSeedUsers() {
         const demo = {
             id: 'u_demo_rehan',
             name: 'Rehan Khan',
-            email: 'rehan.khan@eldercare.app',
+            email: 'rehan.khan@hertzandhaven.app',
             phone: '+91 98450 40240',
             salt,
             passwordHash: hashPassword('rehan@402', salt),
@@ -222,7 +222,7 @@ function ensureSeedUsers() {
             profile: buildStarterProfile({
                 caregiverName: 'Rehan Khan',
                 caregiverPhone: '+91 98450 40240',
-                caregiverEmail: 'rehan.khan@eldercare.app',
+                caregiverEmail: 'rehan.khan@hertzandhaven.app',
                 seniorName: 'Yusuf Khan',
                 seniorAddress: 'Flat 402, Tower B, Prestige Shantiniketan, Whitefield, Bengaluru 560066'
             })
