@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f141b;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: #1a212c;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 0 16px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #96B7C8;
+            box-shadow: 0 0 8px #96B7C8;
+        }
+
+        .brand { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.75); }
+
+        .alert-btn {
+            padding: 5px 14px;
+            border: 1px solid rgba(253,121,168,0.3);
+            background: rgba(253,121,168,0.08);
+            color: #fd79a8;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .alert-btn:hover { background: rgba(253,121,168,0.15); border-color: #fd79a8; }
+
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+        .user-tag { font-size: 12px; color: rgba(255,255,255,0.3); }
+        .user-tag strong { color: rgba(255,255,255,0.7); }
+
+        .logout {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.3);
+            padding: 4px 12px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .logout:hover { border-color: #fd79a8; color: #fd79a8; }
+
+        .main { display: flex; flex: 1; overflow: hidden; }
+
+        .sidebar {
+            width: 260px;
+            background: #1a212c;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.25);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab:hover { color: rgba(255,255,255,0.5); }
+        .sidebar-tab.active { color: #96B7C8; border-bottom-color: #96B7C8; }
+
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 8px; }
+        .sidebar-content::-webkit-scrollbar { width: 4px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .alert-item {
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.02);
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .alert-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+
+        .alert-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .alert-name { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.8); }
+
+        .alert-badge {
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(253,121,168,0.15);
+            color: #fd79a8;
+        }
+
+        .alert-badge.resolved { background: rgba(143,201,189,0.15); color: #8fc9bd; }
+        .alert-badge.transport { background: rgba(9,132,227,0.15); color: #0984e3; }
+
+        .alert-msg { font-size: 11px; color: rgba(255,255,255,0.3); line-height: 1.4; }
+        .alert-time { font-size: 10px; color: rgba(255,255,255,0.15); margin-top: 6px; }
+
+        .empty-msg { text-align: center; padding: 40px 16px; color: rgba(255,255,255,0.12); font-size: 13px; }
+
+        .machine-item {
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.02);
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .machine-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+        .machine-item.alerted { border-color: rgba(253,121,168,0.2); background: rgba(253,121,168,0.04); }
+
+        .machine-left { flex: 1; }
+        .machine-name { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75); margin-bottom: 2px; }
+        .machine-loc { font-size: 11px; color: rgba(255,255,255,0.25); }
+
+        .machine-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #96B7C8;
+            box-shadow: 0 0 6px rgba(150,183,200,0.4);
+            flex-shrink: 0;
+        }
+
+        .machine-dot.alert {
+            background: #fd79a8;
+            box-shadow: 0 0 8px rgba(253,121,168,0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 6px rgba(253,121,168,0.4); }
+            50% { box-shadow: 0 0 16px rgba(253,121,168,0.7); }
+        }
+
+        .map-wrap { flex: 1; position: relative; }
+        #map { width: 100%; height: 100%; background: #0f141b; }
+        .leaflet-container { background: #0f141b !important; }
+
+        .marker-normal {
+            background: #96B7C8;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            border: 2px solid rgba(150,183,200,0.3);
+            box-shadow: 0 0 10px rgba(150,183,200,0.4);
+        }
+
+        .marker-alert {
+            background: #fd79a8;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(253,121,168,0.3);
+            box-shadow: 0 0 14px rgba(253,121,168,0.5);
+            animation: pulseMarker 1.5s infinite;
+        }
+
+        .marker-team {
+            background: #0984e3;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            border: 2px solid rgba(9,132,227,0.3);
+            box-shadow: 0 0 8px rgba(9,132,227,0.4);
+            transition: left 2s linear, top 2s linear;
+        }
+
+        .marker-team.deployed {
+            background: #fdcb6e;
+            border-color: rgba(253,203,110,0.3);
+            box-shadow: 0 0 10px rgba(253,203,110,0.5);
+            animation: pulseTeam 1.5s infinite;
+        }
+
+        @keyframes pulseMarker {
+            0%, 100% { box-shadow: 0 0 8px rgba(253,121,168,0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(253,121,168,0.7); transform: scale(1.15); }
+        }
+
+        @keyframes pulseTeam {
+            0%, 100% { box-shadow: 0 0 6px rgba(253,203,110,0.4); }
+            50% { box-shadow: 0 0 16px rgba(253,203,110,0.7); }
+        }
+
+        .marker-hospital {
+            background: #e17055;
+            width: 10px; height: 10px;
+            border-radius: 2px;
+            border: 2px solid rgba(225,112,85,0.3);
+            box-shadow: 0 0 8px rgba(225,112,85,0.4);
+        }
+
+        .tooltip-custom {
+            background: #1a1a2e !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .tooltip-custom::before { border-top-color: #1a1a2e !important; }
+        .leaflet-tooltip-top::before { border-top-color: #1a1a2e !important; }
+
+        .notification {
+            position: fixed;
+            top: 52px;
+            right: 16px;
+            background: #1a1a2e;
+            border: 1px solid rgba(253,121,168,0.3);
+            padding: 14px 20px;
+            z-index: 2000;
+            display: none;
+            max-width: 320px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.show { display: block; }
+        .notification-title { font-size: 13px; font-weight: 600; color: #fd79a8; margin-bottom: 4px; }
+        .notification-body { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .leaflet-control-zoom a {
+            background: #1a1a2e !important;
+            color: rgba(255,255,255,0.5) !important;
+            border-color: rgba(255,255,255,0.06) !important;
+        }
+
+        .leaflet-control-zoom a:hover { color: #fff !important; }
+
+        .right-panel {
+            width: 0;
+            background: #1a212c;
+            border-left: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+            overflow: hidden;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel.open { width: 360px; }
+
+        .right-panel-inner {
+            width: 360px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .rp-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .rp-title { font-size: 14px; font-weight: 600; color: #fd79a8; }
+
+        .rp-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+
+        .rp-close:hover { color: #fd79a8; }
+
+        .rp-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        .rp-body::-webkit-scrollbar { width: 4px; }
+        .rp-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+        .rp-section { margin-bottom: 20px; }
+
+        .rp-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.25);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+        }
+
+        .call-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .call-info { flex: 1; }
+        .call-status { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 2px; }
+        .call-num { font-size: 11px; color: rgba(255,255,255,0.3); font-family: monospace; }
+
+        .call-btn {
+            padding: 8px 16px;
+            border: none;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .call-btn.start { background: #00b894; color: #fff; }
+        .call-btn.start:hover { background: #00a381; }
+        .call-btn.end { background: #d63031; color: #fff; }
+        .call-btn.end:hover { background: #c0392b; }
+
+        .call-confirmed {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(253,203,110,0.08);
+            border: 1px solid rgba(253,203,110,0.2);
+        }
+
+        .call-confirmed.show { display: block; }
+        .call-confirmed p { font-size: 12px; color: #fdcb6e; margin-bottom: 10px; line-height: 1.4; }
+
+        .confirm-btns { display: flex; gap: 8px; }
+
+        .confirm-btns button {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .confirm-btns .yes { border-color: rgba(0,184,148,0.3); color: #00b894; background: rgba(0,184,148,0.06); }
+        .confirm-btns .yes:hover { background: rgba(0,184,148,0.12); }
+        .confirm-btns .no { border-color: rgba(253,121,168,0.3); color: #fd79a8; background: rgba(253,121,168,0.06); }
+        .confirm-btns .no:hover { background: rgba(253,121,168,0.12); }
+
+        .sms-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 14px;
+        }
+
+        .sms-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            font-size: 13px;
+            resize: none;
+            height: 70px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        .sms-input::placeholder { color: rgba(255,255,255,0.18); }
+        .sms-input:focus { outline: none; border-color: #96B7C8; }
+
+        .sms-send {
+            width: 100%;
+            padding: 9px;
+            border: none;
+            background: #0984e3;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .sms-send:hover { background: #0773c5; }
+
+        .sms-sent {
+            display: none;
+            padding: 10px;
+            background: rgba(143,201,189,0.08);
+            border: 1px solid rgba(143,201,189,0.2);
+            font-size: 12px;
+            color: #8fc9bd;
+            text-align: center;
+        }
+
+        .sms-sent.show { display: block; }
+
+        .action-btns { display: flex; gap: 8px; margin-top: 4px; }
+
+        .action-btns button {
+            flex: 1;
+            padding: 11px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-false { border-color: rgba(143,201,189,0.25) !important; color: #8fc9bd !important; background: rgba(143,201,189,0.06) !important; }
+        .btn-false:hover { background: rgba(143,201,189,0.12) !important; }
+        .btn-actual { border-color: rgba(253,121,168,0.25) !important; color: #fd79a8 !important; background: rgba(253,121,168,0.06) !important; }
+        .btn-actual:hover { background: rgba(253,121,168,0.12) !important; }
+
+        .team-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .team-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 14px;
+        }
+
+        .team-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .team-name { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.8); }
+
+        .team-dist {
+            font-size: 11px;
+            font-weight: 600;
+            color: #0984e3;
+            font-family: monospace;
+        }
+
+        .team-crew { font-size: 11px; color: rgba(255,255,255,0.25); margin-bottom: 10px; }
+
+        .team-deploy {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid rgba(9,132,227,0.3);
+            background: rgba(9,132,227,0.08);
+            color: #0984e3;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .team-deploy:hover { background: rgba(9,132,227,0.15); }
+        .team-deploy.deployed { background: rgba(253,203,110,0.1); border-color: rgba(253,203,110,0.3); color: #fdcb6e; cursor: default; }
+
+        .transport-panel { display: none; }
+
+        .transport-panel.show { display: block; }
+
+        .transport-status-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .transport-phase {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fdcb6e;
+            margin-bottom: 8px;
+        }
+
+        .transport-detail {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.5;
+        }
+
+        .eta-bar {
+            margin-top: 12px;
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .eta-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0984e3, #96B7C8);
+            transition: width 1s linear;
+            border-radius: 2px;
+        }
+
+        .eta-text {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 6px;
+            font-family: monospace;
+        }
+
+        .hospital-info {
+            background: rgba(225,112,85,0.06);
+            border: 1px solid rgba(225,112,85,0.2);
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .hospital-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(225,112,85,0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .hospital-name { font-size: 14px; font-weight: 600; color: #e17055; margin-bottom: 2px; }
+        .hospital-addr { font-size: 11px; color: rgba(255,255,255,0.3); }
+        .hospital-dist { font-size: 12px; color: rgba(225,112,85,0.7); margin-top: 6px; font-family: monospace; }
+
+        .live-feed {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .live-feed::-webkit-scrollbar { width: 3px; }
+        .live-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+        .feed-msg {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            line-height: 1.4;
+        }
+
+        .feed-msg:last-child { border-bottom: none; }
+
+        .feed-msg .time {
+            color: rgba(255,255,255,0.15);
+            font-family: monospace;
+            margin-right: 6px;
+        }
+
+        .feed-msg .team-label { color: #0984e3; font-weight: 500; }
+
+        .map-legend {
+            position: absolute;
+            bottom: 24px;
+            left: 12px;
+            background: rgba(22,22,30,0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 12px 16px;
+            z-index: 999;
+            font-size: 11px;
+        }
+
+        .legend-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 0;
+            color: rgba(255,255,255,0.55);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-square {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .ld-machine { background: #96B7C8; box-shadow: 0 0 6px rgba(150,183,200,0.5); }
+        .ld-alert { background: #fd79a8; box-shadow: 0 0 6px rgba(253,121,168,0.5); }
+        .ld-team { background: #0984e3; box-shadow: 0 0 6px rgba(9,132,227,0.5); }
+        .ld-team-active { background: #fdcb6e; box-shadow: 0 0 6px rgba(253,203,110,0.5); }
+        .ld-hospital { background: #e17055; box-shadow: 0 0 6px rgba(225,112,85,0.5); }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="dot"></div>
+            <div class="brand">Elderly Accident Prevention</div>
+            <button class="alert-btn" id="alertBtn">Alert Showcase</button>
+        </div>
+        <div class="topbar-right">
+            <div class="user-tag">moderator · <strong id="uName">mod</strong></div>
+            <button class="logout" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="sidebar">
+            <div class="sidebar-tabs">
+                <div class="sidebar-tab active" data-tab="alerts">Live Alerts</div>
+                <div class="sidebar-tab" data-tab="machines">Machines</div>
+            </div>
+            <div class="sidebar-content">
+                <div class="panel active" id="alertsPanel">
+                    <div class="empty-msg" id="noAlerts">No alerts yet</div>
+                    <div id="alertList"></div>
+                </div>
+                <div class="panel" id="machinesPanel"></div>
+            </div>
+        </div>
+
+        <div class="map-wrap">
+            <div id="map"></div>
+            <div class="map-legend">
+                <div class="legend-title">Map Key</div>
+                <div class="legend-item"><div class="legend-dot ld-machine"></div> Sensor Device</div>
+                <div class="legend-item"><div class="legend-dot ld-alert"></div> Active Alert</div>
+                <div class="legend-item"><div class="legend-dot ld-team"></div> Healthcare Team</div>
+                <div class="legend-item"><div class="legend-dot ld-team-active"></div> Team Deployed</div>
+                <div class="legend-item"><div class="legend-square ld-hospital"></div> Hospital</div>
+            </div>
+        </div>
+
+        <div class="right-panel" id="rightPanel">
+            <div class="right-panel-inner">
+                <div class="rp-header">
+                    <div class="rp-title" id="rpTitle">Alert Response</div>
+                    <button class="rp-close" id="rpClose">&times;</button>
+                </div>
+                <div class="rp-body" id="rpBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notif">
+        <div class="notification-title" id="notifTitle"></div>
+        <div class="notification-body" id="notifBody"></div>
+    </div>
+
+    <script src="sample-plan.js"></script>
+    <script src="src/app.js"></script>
+    <script>
+        (async () => {
+            let user = null;
+            try {
+                const s = await window.electronAPI.session();
+                user = s ? s.user : null;
+            } catch (e) { user = null; }
+            if (!user) { window.location.href = 'index.html'; return; }
+            if (user.role !== 'moderator') { window.location.href = 'family-dashboard.html'; return; }
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            document.getElementById('uName').textContent = user.name;
+        })();
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try { await window.electronAPI.signOut(); } catch (e) {}
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        });
+
+        const bangaloreCenter = [12.9716, 77.5946];
+
+        const machines = [
+            { id: 'M001', name: 'Fall Sensor A', area: 'MG Road', lat: 12.9758, lng: 77.6085, phone: '+919876543210' },
+            { id: 'M002', name: 'Motion Tracker B', area: 'Whitefield', lat: 12.9698, lng: 77.7500, phone: '+919876543211' },
+            { id: 'M003', name: 'Radar Unit C', area: 'Electronic City', lat: 12.8453, lng: 77.6602, phone: '+919876543212' },
+            { id: 'M004', name: 'Fall Sensor D', area: 'Indiranagar', lat: 12.9784, lng: 77.6408, phone: '+919876543213' },
+            { id: 'M005', name: 'Motion Tracker E', area: 'Koramangala', lat: 12.9352, lng: 77.6245, phone: '+919876543214' },
+            { id: 'M006', name: 'Radar Unit F', area: 'Hebbal', lat: 13.0358, lng: 77.5970, phone: '+919876543215' },
+            { id: 'M007', name: 'Fall Sensor G', area: 'Jayanagar', lat: 12.9293, lng: 77.5843, phone: '+919876543216' },
+            { id: 'M008', name: 'Motion Tracker H', area: 'Marathahalli', lat: 12.9562, lng: 77.6976, phone: '+919876543217' },
+            { id: 'M009', name: 'Radar Unit I', area: 'Yelahanka', lat: 13.1007, lng: 77.5763, phone: '+919876543218' },
+            { id: 'M010', name: 'Fall Sensor J', area: 'Bannerghatta Rd', lat: 12.8882, lng: 77.6006, phone: '+919876543219' },
+            { id: 'M011', name: 'Motion Tracker K', area: 'HSR Layout', lat: 12.9116, lng: 77.6389, phone: '+919876543220' },
+            { id: 'M012', name: 'Radar Unit L', area: 'Sarjapur Road', lat: 12.8590, lng: 77.7870, phone: '+919876543221' },
+        ];
+
+        const hospitals = [
+            { id: 'H001', name: 'Manipal Hospital', addr: 'Old Airport Road', lat: 12.9612, lng: 77.6412 },
+            { id: 'H002', name: 'Apollo Hospital', addr: 'Bannerghatta Road', lat: 12.8888, lng: 77.5991 },
+            { id: 'H003', name: 'Narayana Health', addr: 'Bommasandra', lat: 12.8210, lng: 77.6830 },
+            { id: 'H004', name: 'Fortis Hospital', addr: 'Bannerghatta Road', lat: 12.8930, lng: 77.5960 },
+            { id: 'H005', name: 'Ramaiah Hospital', addr: 'New BEL Road', lat: 13.0265, lng: 77.5640 },
+            { id: 'H006', name: 'Vydehi Hospital', addr: 'Whitefield', lat: 12.9720, lng: 77.7480 },
+        ];
+
+        const teamNames = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel'];
+        const crewNames = [
+            ['Dr. Priya', 'Nurse Ravi'],
+            ['Dr. Arjun', 'EMT Kavitha'],
+            ['Dr. Sneha', 'Nurse Manoj'],
+            ['Dr. Vikram', 'EMT Deepa'],
+            ['Dr. Anita', 'Nurse Suresh'],
+            ['Dr. Kiran', 'EMT Lakshmi'],
+            ['Dr. Rohan', 'Nurse Priyanka'],
+            ['Dr. Meera', 'EMT Anil'],
+        ];
+
+        const trafficZones = {
+            'MG Road': 1.6, 'Whitefield': 1.4, 'Electronic City': 1.3, 'Indiranagar': 1.5,
+            'Koramangala': 1.7, 'Hebbal': 1.3, 'Jayanagar': 1.4, 'Marathahalli': 1.8,
+            'Yelahanka': 1.2, 'Bannerghatta Rd': 1.5, 'HSR Layout': 1.4, 'Sarjapur Road': 1.3,
+            'default': 1.4
+        };
+
+        const feedMessages = {
+            approaching: [
+                'En route to patient location. Traffic is moderate.',
+                'Navigating through current route. ETA updated.',
+                'Almost at the scene. Clearing intersection.',
+                'Approaching target location from the north.',
+            ],
+            arrived: [
+                'Arrived at patient location. Assessing situation.',
+                'On scene. Patient appears stable. Beginning assessment.',
+                'Reached the device location. Checking patient vitals.',
+                'At location. Patient conscious, minor fall detected.',
+            ],
+            transporting: [
+                'Patient loaded. Heading to {hospital}. ETA {eta} min.',
+                'Ambulance mobile. Patient stable. Route clear.',
+                'Transporting to {hospital}. Moderate traffic on route.',
+                'Departing scene. {hospital} is {dist} km away.',
+            ],
+            traffic: [
+                'Heavy traffic on current road. Rerouting.',
+                'Signal delay at junction. +2 min added to ETA.',
+                'Clear road ahead. Making up time.',
+                'Stuck at market area. Slowly progressing.',
+            ],
+            arriving: [
+                'Approaching {hospital}. Preparing handoff.',
+                'Almost at hospital. ER team alerted.',
+                '500 meters from {hospital}. Final approach.',
+            ],
+            atHospital: [
+                'Patient handed over to ER team at {hospital}.',
+                'Transfer complete. Patient in care of hospital staff.',
+                'Mission complete. Patient stable at {hospital}.',
+            ]
+        };
+
+        const roadRoutes = [
+            [[12.9758,77.6085],[12.9748,77.6055],[12.9735,77.6025],[12.9720,77.6000],[12.9705,77.5975],[12.9690,77.5955],[12.9705,77.5975],[12.9735,77.6025],[12.9758,77.6085]],
+            [[12.9698,77.7500],[12.9680,77.7460],[12.9662,77.7420],[12.9648,77.7380],[12.9638,77.7340],[12.9648,77.7380],[12.9670,77.7440],[12.9698,77.7500]],
+            [[12.8453,77.6602],[12.8438,77.6582],[12.8422,77.6558],[12.8408,77.6532],[12.8422,77.6558],[12.8442,77.6590],[12.8453,77.6602]],
+            [[12.9352,77.6245],[12.9340,77.6220],[12.9325,77.6195],[12.9310,77.6170],[12.9298,77.6148],[12.9310,77.6170],[12.9330,77.6210],[12.9352,77.6245]],
+            [[12.9784,77.6408],[12.9770,77.6380],[12.9755,77.6350],[12.9740,77.6320],[12.9728,77.6292],[12.9740,77.6320],[12.9762,77.6372],[12.9784,77.6408]],
+            [[13.0358,77.5970],[13.0342,77.5950],[13.0325,77.5930],[13.0308,77.5912],[13.0325,77.5930],[13.0345,77.5955],[13.0358,77.5970]],
+            [[12.9293,77.5843],[12.9278,77.5825],[12.9262,77.5805],[12.9248,77.5788],[12.9262,77.5805],[12.9280,77.5830],[12.9293,77.5843]],
+            [[12.9562,77.6976],[12.9545,77.6950],[12.9528,77.6925],[12.9512,77.6900],[12.9528,77.6925],[12.9548,77.6960],[12.9562,77.6976]],
+        ];
+
+        async function buildRouteTo(fromLat, fromLng, toLat, toLng) {
+            try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.routes && data.routes.length > 0) {
+                    return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                }
+            } catch(e) {}
+            const dist = haversine(fromLat, fromLng, toLat, toLng);
+            const numPts = Math.max(4, Math.min(12, Math.round(dist * 3)));
+            const r = [[fromLat, fromLng]];
+            for (let i = 1; i < numPts; i++) {
+                const t = i / numPts;
+                r.push([fromLat + (toLat - fromLat) * t + (Math.random()-0.5)*0.001, fromLng + (toLng - fromLng) * t + (Math.random()-0.5)*0.001]);
+            }
+            r.push([toLat, toLng]);
+            return r;
+        }
+
+        function interpolateRoute(route, p) {
+            if (p <= 0) return route[0];
+            if (p >= 1) return route[route.length-1];
+            const seg = (route.length - 1) * p;
+            const i = Math.floor(seg);
+            const t = seg - i;
+            const a = route[i], b = route[Math.min(i+1, route.length-1)];
+            return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];
+        }
+
+        function animateAlongRoute(team, route, speedMs, cb) {
+            const tickMs = 200;
+            const totalSteps = Math.max(5, Math.round(speedMs / tickMs));
+            let step = 0;
+            const iv = setInterval(() => {
+                step++;
+                const [lat, lng] = interpolateRoute(route, step / totalSteps);
+                team.lat = lat; team.lng = lng;
+                team.marker.setLatLng([lat, lng]);
+                if (step >= totalSteps) {
+                    clearInterval(iv);
+                    team.lat = route[route.length-1][0]; team.lng = route[route.length-1][1];
+                    team.marker.setLatLng([team.lat, team.lng]);
+                    if (cb) cb();
+                }
+            }, tickMs);
+            return iv;
+        }
+
+        let alerts = [];
+        let activeMarkers = {};
+        let map;
+        let currentAlert = null;
+
+        let teams = teamNames.map((name, i) => ({
+            id: `T${String(i+1).padStart(3,'0')}`,
+            name: `Team ${name}`,
+            crew: crewNames[i].join(', '),
+            lat: roadRoutes[i][0][0],
+            lng: roadRoutes[i][0][1],
+            marker: null,
+            deployed: false,
+            phase: 'idle',
+            animFrame: null,
+            routeIdx: 0,
+            routeDir: 1,
+        }));
+
+        let deployedTeam = null;
+        let transportInterval = null;
+        let feedInterval = null;
+
+        function haversine(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function getTraffic(area) {
+            return trafficZones[area] || trafficZones.default;
+        }
+
+        function calcETA(distKm, traffic) {
+            const baseSpeed = 25;
+            const avgSpeed = baseSpeed / traffic;
+            return Math.max(1, Math.round((distKm / avgSpeed) * 60));
+        }
+
+        function getNearestHospital(lat, lng) {
+            let nearest = null, minDist = Infinity;
+            hospitals.forEach(h => {
+                const d = haversine(lat, lng, h.lat, h.lng);
+                if (d < minDist) { minDist = d; nearest = h; }
+            });
+            return { hospital: nearest, dist: minDist };
+        }
+
+        function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+        function initMap() {
+            map = L.map('map', { center: bangaloreCenter, zoom: 13, zoomControl: true, attributionControl: false });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+            machines.forEach(m => {
+                const icon = L.divIcon({ className: '', html: '<div class="marker-normal"></div>', iconSize: [10, 10], iconAnchor: [5, 5] });
+                const marker = L.marker([m.lat, m.lng], { icon }).addTo(map)
+                    .bindTooltip(`<div style="font-weight:600;margin-bottom:2px;">${m.name}</div><div style="opacity:0.5;font-size:11px;">${m.area} · ${m.id}</div>`, { className: 'tooltip-custom', direction: 'top', offset: [0, -8] });
+                marker.on('click', () => {
+                    if (activeMarkers[m.id]?.alerted) openRightPanel(m);
+                    else map.flyTo([m.lat, m.lng], 16, { duration: 0.8 });
+                });
+                activeMarkers[m.id] = { marker, machine: m, alerted: false };
+            });
+
+            hospitals.forEach(h => {
+                const icon = L.divIcon({ className: '', html: '<div class="marker-hospital"></div>', iconSize: [10, 10], iconAnchor: [5, 5] });
+                L.marker([h.lat, h.lng], { icon }).addTo(map)
+                    .bindTooltip(`<div style="font-weight:600;margin-bottom:2px;">${h.name}</div><div style="opacity:0.5;font-size:11px;">${h.addr}</div>`, { className: 'tooltip-custom', direction: 'top', offset: [0, -8] });
+            });
+
+            teams.forEach(t => {
+                const icon = L.divIcon({ className: '', html: '<div class="marker-team" id="teamIcon_' + t.id + '"></div>', iconSize: [10, 10], iconAnchor: [5, 5] });
+                t.marker = L.marker([t.lat, t.lng], { icon }).addTo(map)
+                    .bindTooltip(`<div style="font-weight:600;margin-bottom:2px;">${t.name}</div><div style="opacity:0.5;font-size:11px;">${t.crew}</div>`, { className: 'tooltip-custom', direction: 'top', offset: [0, -8] });
+            });
+
+            startPatrol();
+            renderMachines();
+        }
+
+        async function startPatrol() {
+            for (let i = 0; i < teams.length; i++) {
+                const t = teams[i];
+                const waypoints = roadRoutes[i];
+                try {
+                    const coords = waypoints.map(p => `${p[1]},${p[0]}`).join(';');
+                    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+                    if (data.routes && data.routes.length > 0) {
+                        t.patrolRoute = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    } else {
+                        t.patrolRoute = waypoints;
+                    }
+                } catch(e) {
+                    t.patrolRoute = waypoints;
+                }
+                t.routeIdx = 0;
+                t.routeDir = 1;
+                patrolTeam(t, i);
+            }
+        }
+
+        function patrolTeam(team, idx) {
+            if (team.deployed) { setTimeout(() => patrolTeam(team, idx), 2000); return; }
+            const route = team.patrolRoute || roadRoutes[idx];
+            team.routeIdx += team.routeDir;
+            if (team.routeIdx >= route.length - 1) { team.routeDir = -1; team.routeIdx = route.length - 2; }
+            if (team.routeIdx <= 0) { team.routeDir = 1; team.routeIdx = 1; }
+            const [lat, lng] = route[team.routeIdx];
+            const tickMs = 200;
+            const totalSteps = Math.max(5, Math.round((800 + Math.random() * 400) / tickMs));
+            let step = 0;
+            const sLat = team.lat, sLng = team.lng;
+            const iv = setInterval(() => {
+                step++;
+                const p = step / totalSteps;
+                team.lat = sLat + (lat - sLat) * p;
+                team.lng = sLng + (lng - sLng) * p;
+                team.marker.setLatLng([team.lat, team.lng]);
+                if (step >= totalSteps) {
+                    clearInterval(iv);
+                    team.lat = lat; team.lng = lng;
+                    setTimeout(() => patrolTeam(team, idx), 800 + Math.random() * 1200);
+                }
+            }, 75);
+        }
+
+        function renderMachines() {
+            const panel = document.getElementById('machinesPanel');
+            panel.innerHTML = machines.map(m => {
+                const isAlerted = activeMarkers[m.id]?.alerted;
+                return `<div class="machine-item ${isAlerted ? 'alerted' : ''}" data-id="${m.id}"><div class="machine-left"><div class="machine-name">${m.name}</div><div class="machine-loc">${m.area} · ${m.id}</div></div><div class="machine-dot ${isAlerted ? 'alert' : ''}"></div></div>`;
+            }).join('');
+            panel.querySelectorAll('.machine-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const m = activeMarkers[el.dataset.id];
+                    if (m) { if (m.alerted) openRightPanel(m.machine); else map.flyTo([m.machine.lat, m.machine.lng], 16, { duration: 0.8 }); }
+                });
+            });
+        }
+
+        function renderAlerts() {
+            const list = document.getElementById('alertList');
+            const noAlerts = document.getElementById('noAlerts');
+            if (alerts.length === 0) { noAlerts.style.display = 'block'; list.innerHTML = ''; return; }
+            noAlerts.style.display = 'none';
+            list.innerHTML = alerts.map(a => {
+                const cls = a.resolved ? 'resolved' : a.transporting ? 'transport' : '';
+                const lbl = a.resolved ? 'Resolved' : a.transporting ? 'Transport' : 'Alert';
+                return `<div class="alert-item" data-id="${a.id}"><div class="alert-top"><div class="alert-name">${a.machine.name}</div><div class="alert-badge ${cls}">${lbl}</div></div><div class="alert-msg">${a.message}</div><div class="alert-time">${a.time}</div></div>`;
+            }).join('');
+            list.querySelectorAll('.alert-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const a = alerts.find(x => x.id === el.dataset.id);
+                    if (a && !a.resolved) openRightPanel(a.machine);
+                });
+            });
+        }
+
+        function triggerAlert() {
+            const unalerted = machines.filter(m => !activeMarkers[m.id]?.alerted);
+            if (unalerted.length === 0) return;
+            const target = unalerted[Math.floor(Math.random() * unalerted.length)];
+            const m = activeMarkers[target.id];
+            m.alerted = true;
+            m.marker.setIcon(L.divIcon({ className: '', html: '<div class="marker-alert"></div>', iconSize: [12, 12], iconAnchor: [6, 6] }));
+            const alert = { id: 'a' + Date.now(), machine: target, message: 'High velocity anomaly detected — immediate review required.', time: 'just now', resolved: false, transporting: false };
+            alerts.unshift(alert);
+            renderAlerts(); renderMachines();
+            const notif = document.getElementById('notif');
+            document.getElementById('notifTitle').textContent = `Alert — ${target.name}`;
+            document.getElementById('notifBody').textContent = `${target.area} · Velocity spike detected`;
+            notif.className = 'notification show';
+            setTimeout(() => { notif.className = 'notification'; }, 4000);
+            map.flyTo([target.lat, target.lng], 15, { duration: 1 });
+        }
+
+        function openRightPanel(machine) {
+            currentAlert = machine;
+            deployedTeam = null;
+            if (transportInterval) { clearInterval(transportInterval); transportInterval = null; }
+            if (feedInterval) { clearInterval(feedInterval); feedInterval = null; }
+
+            const sorted = teams.filter(t => !t.deployed).map(t => ({
+                ...t, dist: haversine(machine.lat, machine.lng, t.lat, t.lng)
+            })).sort((a, b) => a.dist - b.dist);
+
+            document.getElementById('rpTitle').textContent = `Alert — ${machine.name}`;
+            document.getElementById('rpBody').innerHTML = `
+                <div class="rp-section">
+                    <div class="rp-label">Calling Device</div>
+                    <div class="call-box">
+                        <div class="call-info">
+                            <div class="call-status" id="callStatus">Ready to call</div>
+                            <div class="call-num">${machine.phone}</div>
+                        </div>
+                        <button class="call-btn start" id="callStartBtn">Call</button>
+                    </div>
+                    <div class="call-confirmed" id="callConfirmed">
+                        <p>Is this a false alarm? Confirm with the person at the location.</p>
+                        <div class="confirm-btns">
+                            <button class="yes" id="confirmFalse">False alarm</button>
+                            <button class="no" id="confirmReal">Real threat</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="rp-section">
+                    <div class="rp-label">Send SMS</div>
+                    <div class="sms-box">
+                        <textarea class="sms-input" id="smsInput">Alert: Anomaly detected at ${machine.area}. Please verify safety immediately.</textarea>
+                        <button class="sms-send" id="smsSendBtn">Send SMS</button>
+                    </div>
+                    <div class="sms-sent" id="smsSent">SMS sent to ${machine.phone}</div>
+                </div>
+                <div class="rp-section">
+                    <div class="rp-label">Classification</div>
+                    <div class="action-btns">
+                        <button class="btn-false" id="btnFalse">False Alert</button>
+                        <button class="btn-actual" id="btnActual">Actual Alert</button>
+                    </div>
+                </div>
+                <div class="rp-section" id="teamSection" style="display:none;">
+                    <div class="rp-label">Healthcare Teams</div>
+                    <div class="team-list">${sorted.length ? sorted.map(t => `
+                        <div class="team-item" data-tid="${t.id}">
+                            <div class="team-top"><div class="team-name">${t.name}</div><div class="team-dist">${t.dist.toFixed(1)} km</div></div>
+                            <div class="team-crew">${t.crew}</div>
+                            <button class="team-deploy" data-tid="${t.id}">Deploy</button>
+                        </div>`).join('') : '<div class="empty-msg">All teams currently deployed</div>'}</div>
+                </div>
+                <div class="rp-section transport-panel" id="transportPanel"></div>
+            `;
+
+            document.getElementById('rightPanel').classList.add('open');
+            map.flyTo([machine.lat, machine.lng], 16, { duration: 0.8 });
+
+            let callActive = false;
+            document.getElementById('callStartBtn').addEventListener('click', () => {
+                if (!callActive) {
+                    callActive = true;
+                    document.getElementById('callStatus').textContent = 'Calling...';
+                    document.getElementById('callStatus').style.color = '#fdcb6e';
+                    document.getElementById('callStartBtn').textContent = 'End';
+                    document.getElementById('callStartBtn').className = 'call-btn end';
+                    setTimeout(() => {
+                        document.getElementById('callStatus').textContent = 'Connected';
+                        document.getElementById('callStatus').style.color = '#00b894';
+                        document.getElementById('callConfirmed').classList.add('show');
+                    }, 2000);
+                } else {
+                    callActive = false;
+                    document.getElementById('callStatus').textContent = 'Call ended';
+                    document.getElementById('callStatus').style.color = 'rgba(255,255,255,0.4)';
+                    document.getElementById('callStartBtn').textContent = 'Call';
+                    document.getElementById('callStartBtn').className = 'call-btn start';
+                    document.getElementById('callConfirmed').classList.remove('show');
+                }
+            });
+
+            document.getElementById('confirmFalse')?.addEventListener('click', () => { closeRightPanel(); resolveAlert(machine.id, true); });
+            document.getElementById('confirmReal')?.addEventListener('click', () => {
+                document.getElementById('callConfirmed').innerHTML = '<p style="color:#fd79a8;">Threat confirmed. Deploying healthcare team.</p>';
+                document.getElementById('teamSection').style.display = 'block';
+            });
+
+            let smsSent = false;
+            document.getElementById('smsSendBtn').addEventListener('click', () => {
+                if (!smsSent) { smsSent = true; document.getElementById('smsSendBtn').textContent = 'Sent'; document.getElementById('smsSendBtn').style.background = '#00b894'; document.getElementById('smsSent').classList.add('show'); }
+            });
+
+            document.getElementById('btnFalse').addEventListener('click', () => { closeRightPanel(); resolveAlert(machine.id, true); });
+            document.getElementById('btnActual').addEventListener('click', () => {
+                document.getElementById('teamSection').style.display = 'block';
+                document.getElementById('teamSection').scrollIntoView({ behavior: 'smooth' });
+            });
+
+            document.querySelectorAll('.team-deploy').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tid = btn.dataset.tid;
+                    const team = teams.find(t => t.id === tid);
+                    if (!team || team.deployed) return;
+                    btn.textContent = 'Deployed';
+                    btn.classList.add('deployed');
+                    startTransport(team, machine);
+                });
+            });
+        }
+
+        async function startTransport(team, machine) {
+            deployedTeam = team;
+            team.deployed = true;
+            team.phase = 'to_patient';
+            if (team.animFrame) { clearInterval(team.animFrame); team.animFrame = null; }
+
+            const icon = document.getElementById('teamIcon_' + team.id);
+            if (icon) icon.classList.add('deployed');
+
+            const alert = alerts.find(a => a.machine.id === machine.id && !a.resolved);
+            if (alert) alert.transporting = true;
+            renderAlerts();
+
+            const distToPatient = haversine(team.lat, team.lng, machine.lat, machine.lng);
+            const trafficToPatient = getTraffic(machine.area);
+            const etaToPatient = calcETA(distToPatient, trafficToPatient);
+
+            const { hospital, dist: distToHospital } = getNearestHospital(machine.lat, machine.lng);
+            const trafficToHospital = getTraffic(hospital.name.includes('Whitefield') ? 'Whitefield' : 'default');
+            const etaToHospital = calcETA(distToHospital, trafficToHospital);
+
+            const totalEta = etaToPatient + etaToHospital;
+
+            const panel = document.getElementById('transportPanel');
+            panel.classList.add('show');
+            panel.innerHTML = `
+                <div class="rp-label">Transport Status</div>
+                <div class="hospital-info">
+                    <div class="hospital-label">Destination Hospital</div>
+                    <div class="hospital-name">${hospital.name}</div>
+                    <div class="hospital-addr">${hospital.addr}</div>
+                    <div class="hospital-dist">${distToHospital.toFixed(1)} km away · ~${etaToHospital} min with traffic</div>
+                </div>
+                <div class="transport-status-box">
+                    <div class="transport-phase" id="tpPhase">Team dispatching to patient</div>
+                    <div class="transport-detail" id="tpDetail">${team.name} en route to ${machine.area}. Traffic: ${trafficToPatient > 1.5 ? 'Heavy' : 'Moderate'}.</div>
+                    <div class="eta-bar"><div class="eta-fill" id="tpFill" style="width:0%"></div></div>
+                    <div class="eta-text" id="tpEta">ETA: ${totalEta} min (with traffic)</div>
+                </div>
+                <div class="rp-label">Live Team Feed</div>
+                <div class="live-feed" id="liveFeed"></div>
+            `;
+            document.getElementById('teamSection').style.display = 'none';
+            addFeed(team.name, pickRandom(feedMessages.approaching));
+
+            const toPatientRoute = await buildRouteTo(team.lat, team.lng, machine.lat, machine.lng);
+            const patientAnimMs = Math.max(3000, etaToPatient * 1000);
+            const patientTickMs = 300;
+            const patientTotal = Math.round(patientAnimMs / patientTickMs);
+            let patientStep = 0;
+            const patientIv = setInterval(() => {
+                patientStep++;
+                document.getElementById('tpFill').style.width = Math.min(45, (patientStep / patientTotal) * 45) + '%';
+                document.getElementById('tpEta').textContent = `ETA: ${Math.max(1, Math.ceil(totalEta * (1 - patientStep / patientTotal)))} min`;
+            }, patientTickMs);
+
+            animateAlongRoute(team, toPatientRoute, patientAnimMs, () => {
+                clearInterval(patientIv);
+                document.getElementById('tpFill').style.width = '45%';
+                team.phase = 'at_patient';
+                document.getElementById('tpPhase').textContent = 'Team arrived at patient';
+                document.getElementById('tpDetail').textContent = `${team.name} has arrived at ${machine.area}. Patient assessment in progress.`;
+                addFeed(team.name, pickRandom(feedMessages.arrived));
+
+                setTimeout(async () => {
+                    team.phase = 'to_hospital';
+                    document.getElementById('tpPhase').textContent = `Transporting to ${hospital.name}`;
+                    document.getElementById('tpDetail').textContent = `Patient loaded. Heading to ${hospital.name}. ${distToHospital.toFixed(1)} km, ~${etaToHospital} min.`;
+                    addFeed(team.name, pickRandom(feedMessages.transporting).replace('{hospital}', hospital.name).replace('{eta}', etaToHospital).replace('{dist}', distToHospital.toFixed(1)));
+
+                    const toHospRoute = await buildRouteTo(team.lat, team.lng, hospital.lat, hospital.lng);
+                    const hospAnimMs = Math.max(3000, etaToHospital * 1000);
+                    const hospTickMs = 300;
+                    const hospTotal = Math.round(hospAnimMs / hospTickMs);
+                    let hospStep = 0;
+
+                    const hospIv = setInterval(() => {
+                        hospStep++;
+                        const prog = 45 + (hospStep / hospTotal) * 55;
+                        document.getElementById('tpFill').style.width = Math.min(100, prog) + '%';
+                        document.getElementById('tpEta').textContent = `ETA: ${Math.max(0, Math.ceil(etaToHospital * (1 - hospStep / hospTotal)))} min`;
+                        if (hospStep / hospTotal > 0.3 && team.phase === 'to_hospital') {
+                            team.phase = 'arriving';
+                            document.getElementById('tpPhase').textContent = `Approaching ${hospital.name}`;
+                            document.getElementById('tpDetail').textContent = `Almost at ${hospital.name}. ER team notified.`;
+                            addFeed(team.name, pickRandom(feedMessages.arriving).replace('{hospital}', hospital.name));
+                        }
+                        if (hospStep % 8 === 0 && (team.phase === 'to_hospital' || team.phase === 'arriving')) {
+                            addFeed(team.name, pickRandom(feedMessages.traffic));
+                        }
+                    }, hospTickMs);
+
+                    animateAlongRoute(team, toHospRoute, hospAnimMs, () => {
+                        clearInterval(hospIv);
+                        document.getElementById('tpFill').style.width = '100%';
+                        team.phase = 'at_hospital';
+                        document.getElementById('tpPhase').textContent = 'Transfer complete';
+                        document.getElementById('tpDetail').textContent = `Patient successfully transferred to ${hospital.name}.`;
+                        document.getElementById('tpEta').textContent = 'Mission complete';
+                        addFeed(team.name, pickRandom(feedMessages.atHospital).replace('{hospital}', hospital.name));
+                        resolveAlert(machine.id, false);
+                        team.deployed = false;
+                        team.animFrame = null;
+                        if (icon) icon.classList.remove('deployed');
+                    });
+                }, 3000);
+            });
+        }
+
+        function addFeed(teamName, msg) {
+            const feed = document.getElementById('liveFeed');
+            if (!feed) return;
+            const now = new Date();
+            const time = now.toTimeString().slice(0, 8);
+            const div = document.createElement('div');
+            div.className = 'feed-msg';
+            div.innerHTML = `<span class="time">${time}</span><span class="team-label">${teamName}</span> ${msg}`;
+            feed.appendChild(div);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function closeRightPanel() {
+            document.getElementById('rightPanel').classList.remove('open');
+            currentAlert = null;
+        }
+
+        function resolveAlert(machineId, isFalse) {
+            const m = activeMarkers[machineId];
+            if (!m) return;
+            m.alerted = false;
+            m.marker.setIcon(L.divIcon({ className: '', html: '<div class="marker-normal"></div>', iconSize: [10, 10], iconAnchor: [5, 5] }));
+            const alert = alerts.find(a => a.machine.id === machineId && !a.resolved);
+            if (alert) { alert.resolved = true; alert.transporting = false; alert.message += isFalse ? ' — Marked as false alert' : ' — Patient transported to hospital'; }
+            renderAlerts(); renderMachines();
+        }
+
+        document.getElementById('alertBtn').addEventListener('click', triggerAlert);
+        document.getElementById('rpClose').addEventListener('click', closeRightPanel);
+
+        document.querySelectorAll('.sidebar-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Panel').classList.add('active');
+            });
+        });
+
+        initMap();
+    </script>
+</body>
+</html>

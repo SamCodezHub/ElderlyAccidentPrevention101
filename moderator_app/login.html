@@ -106,6 +106,28 @@
         }
 
         .msg.show { display: block; }
+
+        .toggle {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .toggle a {
+            color: #6c5ce7;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toggle a:hover { text-decoration: underline; }
+
+        .msg.success {
+            border-left-color: #00cec9;
+            background: rgba(0,206,201,0.08);
+            color: #00cec9;
+        }
     </style>
 </head>
 <body>
@@ -114,27 +136,63 @@
 
     <div class="card">
         <div class="bar"></div>
-        <h1>Moderator Login</h1>
-        <p class="sub">Elderly Accident Prevention System</p>
 
-        <div id="msg" class="msg"></div>
+        <div id="loginView">
+            <h1>Moderator Login</h1>
+            <p class="sub">Elderly Accident Prevention System</p>
 
-        <form id="form">
-            <div class="field">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="Enter username" required>
-            </div>
-            <div class="field">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="Enter password" required>
-            </div>
-            <button type="submit" class="submit">Sign in</button>
-        </form>
+            <div id="msg" class="msg"></div>
+
+            <form id="form">
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="submit">Sign in</button>
+            </form>
+            <div class="toggle">No account? <a id="showRegister">Create one</a></div>
+        </div>
+
+        <div id="registerView" style="display:none">
+            <h1>Create Account</h1>
+            <p class="sub">Elderly Accident Prevention System</p>
+
+            <div id="regMsg" class="msg"></div>
+
+            <form id="regForm">
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" id="regUsername" placeholder="Choose a username" required>
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="Choose a password" required>
+                </div>
+                <button type="submit" class="submit">Create Account</button>
+            </form>
+            <div class="toggle">Already have an account? <a id="showLogin">Sign in</a></div>
+        </div>
     </div>
 
     <script>
         const form = document.getElementById('form');
         const msg = document.getElementById('msg');
+        const regForm = document.getElementById('regForm');
+        const regMsg = document.getElementById('regMsg');
+
+        document.getElementById('showRegister').addEventListener('click', () => {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('registerView').style.display = 'block';
+        });
+
+        document.getElementById('showLogin').addEventListener('click', () => {
+            document.getElementById('registerView').style.display = 'none';
+            document.getElementById('loginView').style.display = 'block';
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -156,6 +214,27 @@
             } catch (err) {
                 msg.textContent = 'Something went wrong';
                 msg.className = 'msg show';
+            }
+        });
+
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const result = await window.electronAPI.register({ username, password });
+                if (result.success) {
+                    regMsg.textContent = 'Account created! You can now sign in.';
+                    regMsg.className = 'msg success show';
+                    regForm.reset();
+                } else {
+                    regMsg.textContent = result.message;
+                    regMsg.className = 'msg show';
+                }
+            } catch (err) {
+                regMsg.textContent = 'Something went wrong';
+                regMsg.className = 'msg show';
             }
         });
     </script>

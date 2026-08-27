@@ -112,6 +112,21 @@ A Python backend designed to run on a Raspberry Pi Zero 2W connected to a TI mmW
 | Detection Range | 5.0 m |
 | Update Rate | 10 Hz |
 
+## Web / Vercel version (no Electron)
+
+A static, browser-only build of the caregiver app lives in **`web_app/`**. It
+replaces the Electron runtime with a client-side `localStorage` + Web Crypto
+implementation (see `web_app/src/app.js`) and can be deployed for free on
+Vercel — no server needed. The UI uses the `#96B7C8` blue-gray color theme.
+
+```bash
+cd web_app
+npx vercel          # deploy
+```
+
+Full details in `web_app/README.md`. Run the unit harness with
+`node web_app/test/harness.js`.
+
 ## Setup
 
 ### Prerequisites

@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Setup // The Hertz and Haven Company — Family Gateway</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #10131a;
+            --panel: #1a1f28;
+            --panel2: #212834;
+            --line: rgba(150,183,200,0.14);
+            --txt: #f2efe9;
+            --mut: #a6b6c2;
+            --faint: #66798a;
+            --acc: #96B7C8;
+            --acc-deep: #5D7F94;
+            --cyan: #96B7C8;
+            --green: #6fcfb4;
+            --red: #ff6b7d;
+            --rc: #ff6b7d;
+            --rh: #ffb454;
+            --rm: #6fcfb4;
+            --rl: #8f9bb3;
+        }
+
+        body {
+            font-family: 'Geist', 'Inter', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: var(--panel);
+            border-bottom: 1px solid var(--line);
+            padding: 0 22px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .brand-row { display: flex; align-items: center; gap: 12px; }
+
+        .brand-mark {
+            width: 32px; height: 32px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--acc-deep), var(--acc));
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .brand-mark svg { width: 17px; height: 17px; fill: #fff; }
+        .brand-name { font-size: 13.5px; font-weight: 700; }
+        .brand-tag { font-size: 9.5px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--acc); }
+
+        .user-chip {
+            display: flex; align-items: center; gap: 9px;
+            padding: 5px 13px 5px 6px;
+            border: 1px solid var(--line);
+            border-radius: 99px;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--acc-deep), var(--acc));
+            color: #fff; font-size: 10.5px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .user-chip-name { font-size: 12px; color: var(--mut); }
+        .user-chip-name strong { color: var(--txt); font-weight: 600; }
+
+        .shell { width: 1060px; max-width: 100%; margin: 0 auto; padding: 30px 22px 40px; flex: 1; }
+
+        h1 { font-family: 'Geist', 'Inter', 'Segoe UI', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+        .lede { font-size: 13.5px; color: var(--mut); margin-bottom: 28px; line-height: 1.5; }
+
+        .stepper { display: flex; align-items: center; margin-bottom: 26px; }
+
+        .step-item { display: flex; align-items: center; gap: 10px; cursor: default; }
+
+        .step-bubble {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 2px solid var(--faint);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--mut);
+            transition: all 0.25s;
+            background: transparent;
+            flex-shrink: 0;
+        }
+
+        .step-item.active .step-bubble {
+            border-color: var(--acc); color: var(--acc);
+            box-shadow: 0 0 0 4px rgba(224,142,90,0.14);
+        }
+
+        .step-item.done .step-bubble { border-color: var(--green); background: var(--green); color: #0c1410; }
+
+        .step-label { font-size: 12px; font-weight: 600; color: var(--faint); white-space: nowrap; }
+        .step-item.active .step-label { color: var(--txt); }
+        .step-item.done .step-label { color: var(--green); }
+
+        .step-bar { flex: 1; height: 2px; background: var(--line); margin: 0 16px; border-radius: 2px; overflow: hidden; }
+        .step-bar.done { background: linear-gradient(90deg, var(--green), #58d6b3); }
+
+        .wizard-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .panel-head { margin-bottom: 20px; }
+        .panel-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .panel-sub { font-size: 12.5px; color: var(--mut); line-height: 1.5; }
+
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+        .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 16px; }
+        .span2 { grid-column: span 2; }
+        .span3 { grid-column: span 3; }
+
+        @media (max-width: 780px) {
+            .grid2, .grid3 { grid-template-columns: 1fr; }
+            .span2, .span3 { grid-column: span 1; }
+        }
+
+        .field label {
+            display: block; font-size: 10.5px; font-weight: 700;
+            letter-spacing: 0.8px; text-transform: uppercase;
+            color: var(--mut); margin-bottom: 7px;
+        }
+
+        .field input[type="text"], .field input[type="number"], .field input[type="tel"],
+        .field select, .field textarea {
+            width: 100%; padding: 11px 13px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            color: var(--txt); font-size: 13.5px; font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .field textarea { resize: vertical; min-height: 64px; }
+
+        .field select option { background: var(--panel2); color: var(--txt); }
+
+        .field input::placeholder, .field textarea::placeholder { color: var(--faint); }
+
+        .field input:focus, .field select:focus, .field textarea:focus {
+            outline: none; border-color: var(--acc);
+            box-shadow: 0 0 0 3px rgba(224,142,90,0.12);
+        }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .chip {
+            padding: 7px 14px; border-radius: 99px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,0.03);
+            color: var(--mut); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.18s;
+            user-select: none;
+            font-family: inherit;
+        }
+
+        .chip:hover { border-color: var(--faint); color: var(--txt); }
+
+        .chip.on {
+            border-color: var(--acc); color: var(--acc);
+            background: rgba(224,142,90,0.09);
+        }
+
+        .photo-block { display: flex; gap: 18px; align-items: center; }
+
+        .photo-preview {
+            width: 92px; height: 92px; border-radius: 50%;
+            border: 2px dashed var(--faint);
+            background: var(--panel2);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Geist', 'Inter', 'Segoe UI', sans-serif; font-size: 30px; font-weight: 700;
+            color: var(--faint); overflow: hidden; flex-shrink: 0;
+        }
+
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        .btn {
+            padding: 11px 20px; border-radius: 10px; border: none;
+            font-size: 13px; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--acc-deep), var(--acc));
+            color: #fff;
+        }
+
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(74,124,166,0.35); }
+        .btn-primary:disabled { opacity: 0.45; cursor: default; transform: none; box-shadow: none; }
+
+        .btn-ghost {
+            background: transparent; border: 1px solid var(--line); color: var(--mut);
+        }
+
+        .btn-ghost:hover { border-color: var(--faint); color: var(--txt); }
+        .btn-ghost:disabled { opacity: 0.4; cursor: default; }
+        .btn-ghost.btn-cyan { border-color: rgba(150,183,200,0.35); color: var(--cyan); }
+        .btn-ghost.btn-cyan:hover { background: rgba(150,183,200,0.08); border-color: var(--cyan); }
+
+        .switch { position: relative; display: inline-block; width: 42px; height: 23px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider-t {
+            position: absolute; inset: 0; background: #3a3a4c;
+            border-radius: 99px; transition: 0.25s; cursor: pointer;
+        }
+
+        .slider-t:before {
+            content: ""; position: absolute; height: 17px; width: 17px;
+            left: 3px; top: 3px; background: #fff; border-radius: 50%;
+            transition: 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+
+        .switch input:checked + .slider-t { background: var(--acc); }
+        .switch input:checked + .slider-t:before { transform: translateX(19px); }
+
+        .toggle-inline { display: flex; align-items: center; gap: 12px; padding-top: 4px; }
+        .toggle-text { font-size: 13px; font-weight: 600; }
+
+        .err-line {
+            display: none; margin-top: 16px;
+            padding: 10px 14px; border-radius: 10px;
+            background: rgba(255,93,115,0.08); border: 1px solid rgba(255,93,115,0.25);
+            color: var(--red); font-size: 12.5px; line-height: 1.45;
+        }
+
+        .err-line.show { display: block; }
+
+        .wiz-foot {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line);
+        }
+
+        .foot-note { font-size: 11px; color: var(--faint); }
+
+        .dropzone {
+            border: 1.5px dashed rgba(255,255,255,0.18);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.02);
+            padding: 26px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dropzone:hover, .dropzone.drag { border-color: var(--cyan); background: rgba(150,183,200,0.04); }
+
+        .dz-icon { width: 34px; height: 34px; fill: var(--cyan); margin-bottom: 8px; }
+        .dz-main { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+        .dz-sub { font-size: 11.5px; color: var(--faint); }
+
+        .plan-toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+
+        .plan-wrap {
+            position: relative;
+            background: #10131c;
+            border: 1px solid #232637;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .plan-wrap img { display: block; width: 100%; height: auto; opacity: 0.94; }
+
+        .zone-box {
+            position: absolute; border: 1.5px dashed; border-radius: 6px;
+            opacity: 0; transform: scale(0.95); transition: all 0.35s ease;
+            pointer-events: none;
+        }
+
+        .zone-box.in { opacity: 1; transform: none; }
+        .zone-box.critical { border-color: rgba(255,93,115,0.65); background: rgba(255,93,115,0.07); }
+        .zone-box.high { border-color: rgba(255,180,84,0.6); background: rgba(255,180,84,0.06); }
+        .zone-box.medium { border-color: rgba(76,215,196,0.55); background: rgba(76,215,196,0.05); }
+        .zone-box.low { border-color: rgba(143,155,179,0.5); background: rgba(143,155,179,0.05); }
+
+        .pin {
+            position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; color: #10131c;
+            cursor: pointer; border: 2px solid rgba(255,255,255,0.85);
+            box-shadow: 0 0 0 4px rgba(0,0,0,0.35);
+            opacity: 0; transform: scale(0.4); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .pin.in { opacity: 1; transform: scale(1); }
+        .pin.critical { background: var(--rc); }
+        .pin.high { background: var(--rh); }
+        .pin.medium { background: var(--rm); }
+        .pin.low { background: var(--rl); }
+
+        .pin-tip {
+            position: absolute; left: calc(100% + 10px); top: -8px;
+            background: #0b0d14; border: 1px solid #2a2e42; color: #e8ecf5;
+            font-size: 10.5px; padding: 5px 9px; border-radius: 6px;
+            white-space: nowrap; display: none; z-index: 6; pointer-events: none;
+        }
+
+        .pin-tip b { color: var(--cyan); font-weight: 700; }
+
+        .pin:hover .pin-tip { display: block; }
+
+        .scan-fx {
+            position: absolute; inset: 0; display: none; z-index: 4;
+            background:
+                repeating-linear-gradient(0deg, transparent 0 22px, rgba(150,183,200,0.05) 22px 23px),
+                repeating-linear-gradient(90deg, transparent 0 22px, rgba(150,183,200,0.05) 22px 23px),
+                rgba(4,20,22,0.35);
+        }
+
+        .scan-fx.run { display: block; }
+
+        .scan-line {
+            position: absolute; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            box-shadow: 0 0 22px 6px rgba(150,183,200,0.45);
+            animation: sweep 1.7s linear infinite;
+        }
+
+        @keyframes sweep {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        .scan-hud {
+            position: absolute; left: 12px; bottom: 12px;
+            font-family: Consolas, monospace; font-size: 11px;
+            color: var(--cyan); background: rgba(6,14,16,0.85);
+            border: 1px solid rgba(150,183,200,0.3);
+            padding: 7px 12px; border-radius: 8px;
+            display: flex; align-items: center; gap: 9px;
+        }
+
+        .scan-hud i {
+            width: 9px; height: 9px; border-radius: 50%; background: var(--cyan);
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+        .scan-console {
+            position: absolute; right: 12px; top: 12px;
+            width: 300px; max-width: 62%;
+            background: rgba(8,10,16,0.88);
+            border: 1px solid #232637; border-radius: 10px;
+            padding: 10px 12px; z-index: 5;
+            font-family: Consolas, monospace; font-size: 10.5px;
+            color: #79e6c8; line-height: 1.75;
+            display: none;
+        }
+
+        .scan-console.show { display: block; }
+        .scan-console div { opacity: 0; animation: logIn 0.3s forwards; }
+
+        @keyframes logIn { to { opacity: 1; } }
+
+        .analysis-summary {
+            display: none; margin-top: 14px;
+            padding: 12px 16px; border-radius: 10px;
+            background: rgba(46,204,154,0.07); border: 1px solid rgba(46,204,154,0.25);
+            color: var(--green); font-size: 13px; font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .analysis-summary.show { display: block; }
+
+        .toast {
+            position: fixed; left: 50%; bottom: 26px;
+            transform: translateX(-50%) translateY(12px);
+            background: #232336; color: #fdf8f2;
+            font-size: 12.5px; font-weight: 600;
+            padding: 10px 20px; border-radius: 99px;
+            border: 1px solid var(--line);
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .busy-overlay {
+            position: fixed; inset: 0; background: rgba(10,10,18,0.72);
+            display: none; align-items: center; justify-content: center;
+            z-index: 150; backdrop-filter: blur(3px);
+        }
+
+        .busy-overlay.show { display: flex; }
+
+        .busy-box {
+            background: var(--panel); border: 1px solid var(--line);
+            border-radius: 14px; padding: 22px 30px; text-align: center;
+        }
+
+        .spinner {
+            width: 30px; height: 30px; margin: 0 auto 12px;
+            border: 3px solid var(--line); border-top-color: var(--acc);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .busy-text { font-size: 13px; color: var(--mut); }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand-row">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
+            <div>
+                <div class="brand-tag">// Family Gateway</div>
+                <div class="brand-name">Home Setup Wizard</div>
+            </div>
+        </div>
+        <div class="user-chip">
+            <div class="avatar" id="obInitials">--</div>
+            <div class="user-chip-name">Setting up for <strong id="obUserName">&hellip;</strong></div>
+        </div>
+    </div>
+
+    <div class="shell">
+        <h1>Let's secure your parent's home</h1>
+        <p class="lede">Three quick steps: tell us about them, where they live, and share a floor plan &mdash; our AI will place the 24GHz mmWave sensors where fall risk is highest.</p>
+
+        <div class="stepper" id="stepper">
+            <div class="step-item active" data-step="1">
+                <div class="step-bubble"><span class="b-num">1</span></div>
+                <span class="step-label">Senior Profile</span>
+            </div>
+            <div class="step-bar"></div>
+            <div class="step-item" data-step="2">
+                <div class="step-bubble"><span class="b-num">2</span></div>
+                <span class="step-label">Residence &amp; Access</span>
+            </div>
+            <div class="step-bar"></div>
+            <div class="step-item" data-step="3">
+                <div class="step-bubble"><span class="b-num">3</span></div>
+                <span class="step-label">Schematic &amp; AI Analysis</span>
+            </div>
+        </div>
+
+        <div class="wizard-card">
+            <div class="panel active" id="panel1">
+                <div class="panel-head">
+                    <div class="panel-title">Who are we protecting?</div>
+                    <div class="panel-sub">This profile powers alert routing and appears on your family dashboard.</div>
+                </div>
+                <div class="grid2">
+                    <div class="field span2">
+                        <label>Senior Photo</label>
+                        <div class="photo-block">
+                            <div class="photo-preview" id="photoPreview">?</div>
+                            <div>
+                                <button type="button" class="btn btn-ghost" id="photoBtn">Upload Photo</button>
+                                <input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+                                <div style="font-size:11px;color:var(--faint);margin-top:7px;">PNG or JPG. A friendly face makes alerts clearer.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Full Name *</label>
+                        <input type="text" id="f_name" placeholder="e.g. Yusuf Khan">
+                    </div>
+                    <div class="field">
+                        <label>Age</label>
+                        <input type="number" id="f_age" min="35" max="120" placeholder="74">
+                    </div>
+                    <div class="field">
+                        <label>Gender</label>
+                        <select id="f_gender">
+                            <option value="">Prefer not to say</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Primary Language</label>
+                        <select id="f_language">
+                            <option>English</option><option>Hindi</option><option>Tamil</option>
+                            <option>Telugu</option><option>Bengali</option><option>Kannada</option>
+                            <option>Malayalam</option><option>Marathi</option><option>Gujarati</option><option>Punjabi</option>
+                        </select>
+                    </div>
+                    <div class="field span2">
+                        <label>Health Conditions (select all that apply)</label>
+                        <div class="chips" id="chipsConditions"></div>
+                    </div>
+                    <div class="field span2">
+                        <label>Mobility Profile</label>
+                        <div class="chips" id="chipsMobility"></div>
+                    </div>
+                    <div class="field">
+                        <label>Primary Care Physician</label>
+                        <input type="text" id="f_docName" placeholder="Dr. Meera Iyer">
+                    </div>
+                    <div class="field">
+                        <label>Hospital / Clinic</label>
+                        <input type="text" id="f_docHosp" placeholder="Manipal Hospital">
+                    </div>
+                    <div class="field">
+                        <label>Physician Phone</label>
+                        <input type="tel" id="f_docPhone" placeholder="+91 80 XXXX XXXX">
+                    </div>
+                    <div class="field">
+                        <label>Contact Relation to Senior</label>
+                        <input type="text" id="f_ecRel" placeholder="Son — Primary Caregiver">
+                    </div>
+                    <div class="field">
+                        <label>Emergency Contact Name *</label>
+                        <input type="text" id="f_ecName" placeholder="Rehan Khan">
+                    </div>
+                    <div class="field">
+                        <label>Emergency Contact Phone *</label>
+                        <input type="tel" id="f_ecPhone" placeholder="+91 98XXX XXXXX">
+                    </div>
+                </div>
+                <div class="err-line" id="err1"></div>
+            </div>
+
+            <div class="panel" id="panel2">
+                <div class="panel-head">
+                    <div class="panel-title">Where do they live?</div>
+                    <div class="panel-sub">Used by response teams and for building-entry logistics during emergencies.</div>
+                </div>
+                <div class="grid2">
+                    <div class="field">
+                        <label>Flat / House No. *</label>
+                        <input type="text" id="r_flat" placeholder="Flat 402, Tower B">
+                    </div>
+                    <div class="field">
+                        <label>Area / Locality *</label>
+                        <input type="text" id="r_area" placeholder="Prestige Shantiniketan, Whitefield">
+                    </div>
+                    <div class="field">
+                        <label>City *</label>
+                        <input type="text" id="r_city" placeholder="Bengaluru">
+                    </div>
+                    <div class="field">
+                        <label>Pincode *</label>
+                        <input type="text" id="r_pin" maxlength="6" placeholder="560066" inputmode="numeric">
+                    </div>
+                    <div class="field">
+                        <label>Building Type</label>
+                        <select id="r_type">
+                            <option>Apartment Complex</option>
+                            <option>Independent House</option>
+                            <option>Assisted Living</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Floor Number</label>
+                        <input type="text" id="r_floor" placeholder="4">
+                    </div>
+                    <div class="field span2">
+                        <div class="toggle-inline">
+                            <span class="switch">
+                                <input type="checkbox" id="r_elevator">
+                                <span class="slider-t"></span>
+                            </span>
+                            <span class="toggle-text">Elevator access available</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Emergency Key / Lockbox Brand</label>
+                        <select id="r_lockBrand">
+                            <option value="">None installed</option>
+                            <option>Yale Smart Lockbox</option>
+                            <option>Samsung Digital Lock</option>
+                            <option>Godrej Lockbox</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Lockbox Location / Access Notes</label>
+                        <input type="text" id="r_lockLoc" placeholder="Mounted on main door handle">
+                    </div>
+                    <div class="field span2">
+                        <label>Gate / Entry Notes (optional)</label>
+                        <textarea id="r_notes" placeholder="Visitor parking via Gate 2. Security desk knows the family."></textarea>
+                    </div>
+                </div>
+                <div class="err-line" id="err2"></div>
+            </div>
+
+            <div class="panel" id="panel3">
+                <div class="panel-head">
+                    <div class="panel-title">Upload a floor plan &mdash; AI places the sensors</div>
+                    <div class="panel-sub">Our spatial analysis engine scans the schematic, finds high-risk fall zones and recommends 24GHz mmWave placements.</div>
+                </div>
+
+                <div class="plan-toolbar">
+                    <button type="button" class="btn btn-ghost btn-cyan" id="sampleBtn">Load Sample 2BHK Floor Plan</button>
+                    <button type="button" class="btn btn-primary" id="analyzeBtn" disabled>Run AI Spatial Analysis</button>
+                    <span style="font-size:11px;color:var(--faint);" id="fileTag"></span>
+                </div>
+
+                <div class="dropzone" id="dropzone">
+                    <svg class="dz-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    <div class="dz-main">Drop your house layout here, or click to browse</div>
+                    <div class="dz-sub">PNG &middot; JPG &middot; SVG &mdash; a phone photo of a hand-drawn plan works too</div>
+                    <input type="file" id="planInput" accept=".png,.jpg,.jpeg,.svg,.webp,image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;">
+                </div>
+
+                <div class="plan-wrap" id="planWrap" style="margin-top:16px; display:none;">
+                    <img id="planImg" alt="House floor plan schematic">
+                    <div id="zoneLayer"></div>
+                    <div id="pinLayer"></div>
+                    <div class="scan-fx" id="scanFx">
+                        <div class="scan-line"></div>
+                    </div>
+                    <div class="scan-hud" id="scanHud" style="display:none;"><i></i><span id="scanStatus">AI Spatial Analysis Running&hellip;</span></div>
+                    <div class="scan-console" id="scanConsole"></div>
+                </div>
+
+                <div class="analysis-summary" id="analysisSummary"></div>
+                <div class="err-line" id="err3"></div>
+            </div>
+
+            <div class="wiz-foot">
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button type="button" class="btn btn-ghost" id="backBtn" style="visibility:hidden;">Back</button>
+                    <span class="foot-note">Saved locally on this device &middot; data/auth-db.json</span>
+                </div>
+                <button type="button" class="btn btn-primary" id="nextBtn">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="busy-overlay" id="busyOverlay">
+        <div class="busy-box">
+            <div class="spinner"></div>
+            <div class="busy-text" id="busyText">Saving home setup&hellip;</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="sample-plan.js"></script>
+    <script src="src/app.js"></script>
+    <script>
+        const api = window.electronAPI;
+
+        const CONDITION_OPTS = ['Osteoporosis', 'Cardiac History', 'Diabetes', 'Arthritis', 'Post-Stroke Balance Impairment', 'Limited Vision', 'Hearing Loss', 'Dementia / Memory Care'];
+        const MOBILITY_OPTS = ['Walks unaided', 'Walks with cane', 'Walker / Zimmer frame', 'Wheelchair', 'Mostly bed-bound'];
+
+        let step = 1;
+        let furthest = 1;
+        let analyzed = false;
+        let scanning = false;
+        let SESSION_USER = null;
+
+        const draft = {
+            senior: { name: '', age: '', gender: '', language: 'English', conditions: [], mobility: 'Walks unaided', photo: null },
+            physician: { name: '', hospital: '', phone: '' },
+            emergencyContact: { name: '', relation: '', phone: '' },
+            residence: { flat: '', area: '', city: '', pincode: '', buildingType: 'Apartment Complex', floor: '', elevator: false, lockboxBrand: '', lockboxLocation: '', notes: '' },
+            schematic: null,
+            sensors: []
+        };
+
+        function $(id) { return document.getElementById(id); }
+
+        function toast(msg) {
+            const t = $('toast');
+            t.textContent = msg;
+            t.className = 'toast show';
+            setTimeout(() => { t.className = 'toast'; }, 2400);
+        }
+
+        function initials(name) {
+            return String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
+        }
+
+        function buildChips(containerId, opts, multi, stateKey) {
+            const wrap = $(containerId);
+            wrap.innerHTML = '';
+            opts.forEach(opt => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'chip';
+                b.textContent = opt;
+                b.addEventListener('click', () => {
+                    if (multi) {
+                        const arr = draft.senior[stateKey];
+                        const i = arr.indexOf(opt);
+                        if (i >= 0) arr.splice(i, 1); else arr.push(opt);
+                        b.classList.toggle('on', i < 0);
+                    } else {
+                        draft.senior[stateKey] = opt;
+                        wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+                        b.classList.add('on');
+                    }
+                });
+                wrap.appendChild(b);
+            });
+        }
+
+        function showStep(n) {
+            step = n;
+            furthest = Math.max(furthest, n);
+            [1, 2, 3].forEach(i => $('panel' + i).classList.toggle('active', i === n));
+            document.querySelectorAll('#stepper .step-item').forEach(el => {
+                const s = parseInt(el.dataset.step, 10);
+                el.classList.toggle('active', s === n);
+                el.classList.toggle('done', s < n);
+            });
+            document.querySelectorAll('#stepper .step-bar').forEach((el, idx) => {
+                el.classList.toggle('done', idx + 1 < n);
+            });
+            document.querySelectorAll('.step-item.done .b-num, #stepper .step-item.done .step-bubble').forEach(() => {});
+            document.querySelectorAll('.step-item.done .step-bubble').forEach(b => {
+                if (!b.querySelector('.tick')) {
+                    const sp = document.createElement('span');
+                    sp.className = 'tick';
+                    sp.innerHTML = '&#10003;';
+                    b.innerHTML = '';
+                    b.appendChild(sp);
+                }
+            });
+            document.querySelectorAll('.step-item:not(.done) .step-bubble').forEach(b => {
+                const item = b.closest('.step-item');
+                b.innerHTML = '<span class="b-num">' + item.dataset.step + '</span>';
+            });
+            $('backBtn').style.visibility = n > 1 ? 'visible' : 'hidden';
+            $('nextBtn').textContent = n < 3 ? 'Continue' : (analyzed ? 'Finish Setup & Launch Dashboard' : 'Complete AI Analysis First');
+            $('nextBtn').disabled = n === 3 && !analyzed;
+        }
+
+        function setErr(id, msg) {
+            const el = $(id);
+            if (!msg) { el.className = 'err-line'; return; }
+            el.textContent = msg;
+            el.className = 'err-line show';
+        }
+
+        function validateStep1() {
+            setErr('err1');
+            if ($('f_name').value.trim().length < 2) return setErr('err1', 'Please enter your parent\u2019s full name.'), false;
+            if (!$('f_ecName').value.trim()) return setErr('err1', 'Emergency contact name is required.'), false;
+            if ($('f_ecPhone').value.replace(/\D/g, '').length < 8) return setErr('err1', 'Enter a valid emergency contact phone number.'), false;
+            return true;
+        }
+
+        function validateStep2() {
+            setErr('err2');
+            if (!$('r_flat').value.trim()) return setErr('err2', 'Flat / house number is required.'), false;
+            if (!$('r_area').value.trim()) return setErr('err2', 'Area / locality is required.'), false;
+            if (!$('r_city').value.trim()) return setErr('err2', 'City is required.'), false;
+            if (!/^\d{6}$/.test($('r_pin').value.trim())) return setErr('err2', 'Pincode must be exactly 6 digits.'), false;
+            return true;
+        }
+
+        function collectStep1() {
+            draft.senior.name = $('f_name').value.trim();
+            draft.senior.age = $('f_age').value;
+            draft.senior.gender = $('f_gender').value;
+            draft.senior.language = $('f_language').value;
+            draft.physician = { name: $('f_docName').value.trim(), hospital: $('f_docHosp').value.trim(), phone: $('f_docPhone').value.trim() };
+            draft.emergencyContact = { name: $('f_ecName').value.trim(), relation: $('f_ecRel').value.trim(), phone: $('f_ecPhone').value.trim() };
+        }
+
+        function collectStep2() {
+            draft.residence = {
+                flat: $('r_flat').value.trim(),
+                area: $('r_area').value.trim(),
+                city: $('r_city').value.trim(),
+                pincode: $('r_pin').value.trim(),
+                buildingType: $('r_type').value,
+                floor: $('r_floor').value.trim(),
+                elevator: $('r_elevator').checked,
+                lockboxBrand: $('r_lockBrand').value,
+                lockboxLocation: $('r_lockLoc').value.trim(),
+                notes: $('r_notes').value.trim()
+            };
+        }
+
+        function handlePhotoFile(file) {
+            if (!file || !/^image\/(png|jpe?g|webp)$/.test(file.type)) { toast('Please choose a PNG or JPG photo.'); return; }
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const size = 256;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size; canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    const min = Math.min(img.width, img.height);
+                    ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, size, size);
+                    draft.senior.photo = canvas.toDataURL('image/jpeg', 0.85);
+                    const pv = $('photoPreview');
+                    pv.innerHTML = '';
+                    const im = document.createElement('img');
+                    im.src = draft.senior.photo;
+                    pv.appendChild(im);
+                    toast('Photo attached.');
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setPlan(name, dataUrl) {
+            draft.schematic = { name, dataUrl };
+            resetAnalysis();
+            $('dropzone').style.display = 'none';
+            $('planWrap').style.display = 'block';
+            $('planImg').src = dataUrl;
+            $('fileTag').textContent = name;
+            $('analyzeBtn').disabled = false;
+        }
+
+        function resetAnalysis() {
+            analyzed = false;
+            draft.sensors = [];
+            $('zoneLayer').innerHTML = '';
+            $('pinLayer').innerHTML = '';
+            $('scanConsole').innerHTML = '';
+            $('scanConsole').className = 'scan-console';
+            $('scanHud').style.display = 'none';
+            $('scanFx').className = 'scan-fx';
+            $('analysisSummary').className = 'analysis-summary';
+            if (step === 3) showStep(3);
+        }
+
+        function handlePlanFile(file) {
+            const okTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+            const okExt = /\.(png|jpe?g|svg|webp)$/i;
+            if (!file || (!okTypes.includes(file.type) && !okExt.test(file.name))) { toast('Use a PNG, JPG, SVG or WEBP floor plan image.'); return; }
+            if (file.size > 8 * 1024 * 1024) { toast('Image too large — keep it under 8MB.'); return; }
+            const reader = new FileReader();
+            reader.onload = () => {
+                let dataUrl = reader.result;
+                if (file.type !== 'image/svg+xml' && dataUrl.length > 3200000) {
+                    shrinkImage(dataUrl, shrunken => setPlan(file.name, shrunken));
+                } else {
+                    setPlan(file.name, dataUrl);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function shrinkImage(dataUrl, cb) {
+            const img = new Image();
+            img.onload = () => {
+                const maxW = 1400;
+                const scale = Math.min(1, maxW / img.width);
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                cb(canvas.toDataURL('image/jpeg', 0.85));
+            };
+            img.onerror = () => cb(dataUrl);
+            img.src = dataUrl;
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        async function runAnalysis() {
+            if (scanning || !draft.schematic) return;
+            scanning = true;
+            $('analyzeBtn').disabled = true;
+            $('sampleBtn').disabled = true;
+            setErr('err3');
+            const isSample = draft.schematic.name === 'Sample 2BHK Floor Plan';
+            const result = await api.analyzeSchematic(isSample ? 'SAMPLE_2BHK' : draft.schematic.dataUrl.length + ':' + draft.schematic.name);
+            if (!result || !result.success) {
+                scanning = false;
+                setErr('err3', (result && result.message) || 'Analysis engine unavailable. Please try again.');
+                $('analyzeBtn').disabled = false;
+                $('sampleBtn').disabled = false;
+                return;
+            }
+            const fx = $('scanFx');
+            const hud = $('scanHud');
+            const con = $('scanConsole');
+            fx.classList.add('run');
+            hud.style.display = 'flex';
+            con.className = 'scan-console show';
+            con.innerHTML = '';
+
+            const lines = result.scanLog || [];
+            for (let i = 0; i < lines.length; i++) {
+                $('scanStatus').textContent = lines[i];
+                const row = document.createElement('div');
+                row.textContent = '> ' + lines[i];
+                con.appendChild(row);
+                await sleep(i === lines.length - 1 ? 700 : 560);
+            }
+
+            draft.sensors = result.sensors;
+            renderZones(result.sensors, true);
+
+            fx.classList.remove('run');
+            hud.style.display = 'none';
+            analyzed = true;
+            scanning = false;
+            const crit = result.sensors.filter(s => s.risk === 'critical').length;
+            $('analysisSummary').innerHTML =
+                '<b>' + result.sensors.length + ' high-risk zones identified</b> (' + crit + ' critical) &mdash; ' +
+                result.sensors.length + ' x 24GHz mmWave sensors recommended. Hover any sensor pin to inspect its placement.';
+            $('analysisSummary').className = 'analysis-summary show';
+            $('nextBtn').textContent = 'Finish Setup & Launch Dashboard';
+            $('nextBtn').disabled = false;
+        }
+
+        function renderZones(sensors, stagger) {
+            const zl = $('zoneLayer');
+            const pl = $('pinLayer');
+            zl.innerHTML = '';
+            pl.innerHTML = '';
+            sensors.forEach((s, i) => {
+                const box = document.createElement('div');
+                box.className = 'zone-box ' + s.risk;
+                box.style.left = s.x + '%';
+                box.style.top = s.y + '%';
+                box.style.width = s.w + '%';
+                box.style.height = s.h + '%';
+                zl.appendChild(box);
+                const pin = document.createElement('div');
+                pin.className = 'pin ' + s.risk;
+                pin.style.left = s.px + '%';
+                pin.style.top = s.py + '%';
+                pin.textContent = String(i + 1);
+                const tip = document.createElement('span');
+                tip.className = 'pin-tip';
+                tip.innerHTML = '<b>Sensor #' + (i + 1) + '</b> &middot; ';
+                tip.appendChild(document.createTextNode(s.room + ' — ' + s.zone + ' · ' + s.confidence + '% confidence'));
+                pin.appendChild(tip);
+                pl.appendChild(pin);
+                const delay = stagger ? i * 190 : 0;
+                setTimeout(() => { box.classList.add('in'); pin.classList.add('in'); }, delay);
+            });
+        }
+
+        async function finish() {
+            collectStep1();
+            collectStep2();
+            if (!analyzed || !draft.sensors.length) {
+                setErr('err3', 'Run the AI spatial analysis before finishing.');
+                return;
+            }
+            $('busyOverlay').className = 'busy-overlay show';
+            try {
+                const res = await api.completeOnboarding({
+                    senior: draft.senior,
+                    physician: draft.physician,
+                    emergencyContact: draft.emergencyContact,
+                    residence: draft.residence,
+                    schematic: draft.schematic,
+                    sensors: draft.sensors
+                });
+                if (res && res.success) {
+                    window.location.href = 'family-dashboard.html';
+                    return;
+                }
+                setErr('err3', (res && res.message) || 'Could not save your setup. Please try again.');
+            } catch (e) {
+                setErr('err3', 'Could not save your setup. Please try again.');
+            }
+            $('busyOverlay').className = 'busy-overlay';
+        }
+
+        function prefill(profile) {
+            if (!profile) return;
+            const sn = profile.senior || {};
+            if (sn.name) $('f_name').value = sn.name;
+            if (sn.age) $('f_age').value = sn.age;
+            if (sn.gender) $('f_gender').value = sn.gender;
+            if (sn.language) $('f_language').value = sn.language;
+            (sn.conditions || []).forEach(c => {
+                const idx = CONDITION_OPTS.indexOf(c);
+                if (idx >= 0) $('chipsConditions').children[idx].classList.add('on');
+                draft.senior.conditions.push(c);
+            });
+            if (sn.mobility) {
+                draft.senior.mobility = sn.mobility;
+                const mIdx = MOBILITY_OPTS.indexOf(sn.mobility);
+                if (mIdx >= 0) $('chipsMobility').children[mIdx].classList.add('on');
+            }
+            if (sn.photo) {
+                draft.senior.photo = sn.photo;
+                const pv = $('photoPreview');
+                pv.innerHTML = '';
+                const im = document.createElement('img');
+                im.src = sn.photo;
+                pv.appendChild(im);
+            }
+            const ph = sn.physician || {};
+            if (ph.name) $('f_docName').value = ph.name;
+            if (ph.hospital) $('f_docHosp').value = ph.hospital;
+            if (ph.phone) $('f_docPhone').value = ph.phone;
+            const ec = (sn.emergencyContacts || [])[0] || {};
+            if (ec.name) { $('f_ecName').value = ec.name; }
+            if (ec.relation) $('f_ecRel').value = ec.relation;
+            if (ec.phone) $('f_ecPhone').value = ec.phone;
+            const rs = profile.residence || {};
+            if (rs.flat) $('r_flat').value = rs.flat;
+            if (rs.area) $('r_area').value = rs.area;
+            if (rs.city) $('r_city').value = rs.city;
+            if (rs.pincode) $('r_pin').value = rs.pincode;
+            if (rs.buildingType) $('r_type').value = rs.buildingType;
+            if (rs.floor) $('r_floor').value = rs.floor;
+            $('r_elevator').checked = !!rs.elevator;
+            if (rs.lockboxBrand) $('r_lockBrand').value = rs.lockboxBrand;
+            if (rs.lockboxLocation) $('r_lockLoc').value = rs.lockboxLocation;
+            const ob = profile.onboarding;
+            if (ob && ob.completed && ob.schematic && ob.schematic.dataUrl) {
+                setPlan(ob.schematic.name || 'Floor Plan', ob.schematic.dataUrl);
+                draft.sensors = ob.sensors || [];
+                analyzed = draft.sensors.length > 0;
+                renderZones(draft.sensors, false);
+                $('analysisSummary').innerHTML = '<b>Previous analysis loaded</b> — re-run anytime or finish to continue.';
+                $('analysisSummary').className = 'analysis-summary show';
+                showStep(3);
+            }
+        }
+
+        $('photoBtn').addEventListener('click', () => $('photoInput').click());
+        $('photoInput').addEventListener('change', e => handlePhotoFile(e.target.files[0]));
+        buildChips('chipsConditions', CONDITION_OPTS, true, 'conditions');
+        buildChips('chipsMobility', MOBILITY_OPTS, false, 'mobility');
+
+        $('backBtn').addEventListener('click', () => { if (step > 1) showStep(step - 1); });
+
+        $('nextBtn').addEventListener('click', () => {
+            if (step === 1) {
+                if (!validateStep1()) return;
+                collectStep1();
+                showStep(2);
+            } else if (step === 2) {
+                if (!validateStep2()) return;
+                collectStep2();
+                showStep(3);
+            } else {
+                finish();
+            }
+        });
+
+        $('dropzone').addEventListener('click', () => $('planInput').click());
+        $('planInput').addEventListener('change', e => handlePlanFile(e.target.files[0]));
+        ['dragenter', 'dragover'].forEach(ev => $('dropzone').addEventListener(ev, e => { e.preventDefault(); $('dropzone').classList.add('drag'); }));
+        ['dragleave', 'drop'].forEach(ev => $('dropzone').addEventListener(ev, e => { e.preventDefault(); $('dropzone').classList.remove('drag'); }));
+        $('dropzone').addEventListener('drop', e => handlePlanFile(e.dataTransfer.files[0]));
+
+        $('sampleBtn').addEventListener('click', async () => {
+            $('sampleBtn').disabled = true;
+            const r = await api.sampleSchematic();
+            $('sampleBtn').disabled = false;
+            if (r && r.success) setPlan('Sample 2BHK Floor Plan', r.dataUrl);
+            else toast('Could not load the sample plan.');
+        });
+
+        $('analyzeBtn').addEventListener('click', runAnalysis);
+
+        (async function boot() {
+            try {
+                const s = await api.session();
+                if (!s) { window.location.href = 'index.html'; return; }
+                SESSION_USER = s.user;
+                prefill(s.profile);
+            } catch (e) {
+                window.location.href = 'index.html';
+                return;
+            }
+            $('obUserName').textContent = SESSION_USER.name || 'your family';
+            $('obInitials').textContent = initials(SESSION_USER.name);
+            showStep(1);
+        })();
+    </script>
+</body>
+</html>
