@@ -11,16 +11,16 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #F2F8FD;
-            --card: #FFFFFF;
-            --ink: #1F4763;
-            --muted: #6D93B4;
-            --faint: #A6C2D8;
-            --line: #DCEAF5;
-            --accent: #4FA8E0;
-            --accent-dark: #2A7FC4;
-            --green: #2E9C98;
-            --red: #D64541;
+            --bg: #ECEFF4;
+            --card: #F7F9FC;
+            --ink: #28354A;
+            --muted: #5F7187;
+            --faint: #8FA1B2;
+            --line: #D7DEE7;
+            --accent: #4A7CA6;
+            --accent-dark: #3B627F;
+            --green: #3F7C77;
+            --red: #C04E4E;
         }
 
         body {
@@ -41,7 +41,7 @@
             pointer-events: none;
         }
 
-        .g1 { top: -180px; left: -120px; width: 480px; height: 480px; background: rgba(79,168,224,0.14); }
+        .g1 { top: -180px; left: -120px; width: 480px; height: 480px; background: rgba(74,124,166,0.14); }
         .g2 { bottom: -160px; right: -100px; width: 420px; height: 420px; background: rgba(47,125,109,0.10); }
 
         .shell { width: 440px; max-width: 100%; position: relative; z-index: 1; }
@@ -67,11 +67,11 @@
         .brand-mark {
             width: 46px; height: 46px;
             border-radius: 14px;
-            background: linear-gradient(135deg, var(--accent), #7FB8E0);
+            background: linear-gradient(135deg, var(--accent), #5F87A6);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(79,168,224,0.30);
+            box-shadow: 0 8px 20px rgba(74,124,166,0.30);
             flex-shrink: 0;
         }
 
@@ -101,7 +101,7 @@
             border: 1px solid var(--line);
             border-radius: 18px;
             padding: 28px;
-            box-shadow: 0 18px 50px rgba(31,71,99,0.10);
+            box-shadow: 0 18px 50px rgba(40,53,74,0.10);
         }
 
         .tabs {
@@ -127,7 +127,7 @@
             font-family: inherit;
         }
 
-        .tab.active { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(31,71,99,0.12); }
+        .tab.active { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(40,53,74,0.12); }
 
         .form { display: none; }
         .form.active { display: block; }
@@ -162,7 +162,7 @@
             outline: none;
             border-color: var(--accent);
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(79,168,224,0.12);
+            box-shadow: 0 0 0 3px rgba(74,124,166,0.12);
         }
 
         .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -236,7 +236,7 @@
             padding: 13px;
             border: none;
             border-radius: 11px;
-            background: linear-gradient(135deg, var(--accent), #7FB8E0);
+            background: linear-gradient(135deg, var(--accent), #5F87A6);
             color: #fff;
             font-size: 14px;
             font-weight: 700;
@@ -245,7 +245,7 @@
             transition: all 0.25s;
         }
 
-        .submit:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(79,168,224,0.35); }
+        .submit:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(74,124,166,0.35); }
         .submit:disabled { opacity: 0.65; cursor: default; transform: none; box-shadow: none; }
 
         .divider {
@@ -266,7 +266,7 @@
             border: 1.5px dashed #dcbfa8;
             border-radius: 14px;
             padding: 16px;
-            background: rgba(79,168,224,0.04);
+            background: rgba(74,124,166,0.04);
             text-align: center;
         }
 
@@ -437,7 +437,7 @@
 
             <div class="demo-box">
                 <div class="demo-title">
-                    <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#4FA8E0;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#4A7CA6;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
                     Quick Demo Sign-In
                 </div>
                 <div class="demo-sub">Sign in as Rehan &mdash; Monitoring Flat 402, Bengaluru</div>
