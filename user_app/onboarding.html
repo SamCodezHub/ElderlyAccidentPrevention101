@@ -1072,11 +1072,11 @@
         (async function boot() {
             try {
                 const s = await api.session();
-                if (!s) { window.location.href = 'login.html'; return; }
+                if (!s) { window.location.href = 'index.html'; return; }
                 SESSION_USER = s.user;
                 prefill(s.profile);
             } catch (e) {
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
                 return;
             }
             $('obUserName').textContent = SESSION_USER.name || 'your family';

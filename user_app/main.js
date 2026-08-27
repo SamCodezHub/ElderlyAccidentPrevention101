@@ -19,7 +19,7 @@ function safe(fn) {
 }
 
 function startPageFor(boot) {
-    if (!boot) return 'login.html';
+    if (!boot) return 'index.html';
     const ob = boot.profile && boot.profile.onboarding;
     if (boot.user.role === 'moderator') return 'dashboard.html';
     if (!ob || !ob.completed) return 'onboarding.html';

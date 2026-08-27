@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Family Monitoring View // Eldercare Caregiver Portal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -644,182 +646,540 @@
         .dispatch-overlay.show { opacity: 1; pointer-events: auto; }
 
         .dispatch-map-wrap {
-            width: min(920px, 92vw);
-            height: min(540px, 70vh);
+            width: min(960px, 94vw);
+            height: min(580px, 74vh);
             border-radius: 16px;
             overflow: hidden;
             position: relative;
             background: #0e1220;
             border: 1px solid #1e2640;
             box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
         }
 
-        .dispatch-map {
-            width: 100%;
-            height: 100%;
-            position: relative;
+        .dispatch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: #12152a;
+            border-bottom: 1px solid #1e2640;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .dispatch-title {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ff8c6b;
+            text-transform: uppercase;
+        }
+
+        .dispatch-title-sub {
+            font-size: 10px;
+            color: rgba(200,210,230,0.4);
+            margin-top: 2px;
+        }
+
+        .dispatch-status-pill {
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: rgba(253,121,168,0.12);
+            color: #fd79a8;
+            border: 1px solid rgba(253,121,168,0.25);
+        }
+
+        .dispatch-status-pill.resolved {
+            background: rgba(0,206,201,0.12);
+            color: #00cec9;
+            border-color: rgba(0,206,201,0.25);
+        }
+
+        .dispatch-status-pill.arriving {
+            background: rgba(255,180,84,0.12);
+            color: #ffb454;
+            border-color: rgba(255,180,84,0.25);
+        }
+
+        .dispatch-body {
+            display: flex;
+            flex: 1;
             overflow: hidden;
         }
 
-        .map-grid {
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(40,55,90,0.22) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(40,55,90,0.22) 1px, transparent 1px);
-            background-size: 60px 60px;
+        .dispatch-map {
+            flex: 1;
+            position: relative;
+            min-width: 0;
         }
 
-        .map-road-h, .map-road-v { position: absolute; background: rgba(50,70,110,0.4); }
-        .map-road-h { height: 3px; left: 0; right: 0; }
-        .map-road-v { width: 3px; top: 0; bottom: 0; }
+        .dispatch-map .leaflet-container { background: #0e1220 !important; height: 100%; width: 100%; }
 
-        .map-label {
-            position: absolute;
-            font-size: 10px;
-            font-family: Consolas, monospace;
-            color: rgba(120,145,200,0.55);
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            pointer-events: none;
-        }
-
-        .map-label.road { color: rgba(90,120,180,0.45); }
-
-        .origin-pin {
-            position: absolute;
-            left: 12%;
-            top: 38%;
-            width: 32px;
-            height: 32px;
-            margin: -16px 0 0 -16px;
-            z-index: 5;
-        }
-
-        .origin-pin .pin-head {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: #e74c3c;
-            border: 3px solid rgba(255,255,255,0.9);
-            box-shadow: 0 0 0 5px rgba(231,76,60,0.3), 0 0 20px rgba(231,76,60,0.4);
+        .dm-hospital-marker {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            background: rgba(18,21,42,0.9);
+            border: 2px solid #e17055;
             display: flex; align-items: center; justify-content: center;
-            font-size: 15px;
-            animation: originPulse 2s infinite;
+            color: #e17055;
+            font-size: 13px;
+            font-weight: 800;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+            transition: all 0.2s;
+            cursor: pointer;
         }
 
-        @keyframes originPulse {
-            0%, 100% { box-shadow: 0 0 0 5px rgba(231,76,60,0.3), 0 0 20px rgba(231,76,60,0.4); }
-            50% { box-shadow: 0 0 0 10px rgba(231,76,60,0.15), 0 0 30px rgba(231,76,60,0.5); }
+        .dm-hospital-marker.selected {
+            background: #e17055;
+            color: #fff;
+            border-color: #fff;
+            box-shadow: 0 0 0 4px rgba(225,112,85,0.35), 0 3px 10px rgba(0,0,0,0.4);
+            transform: scale(1.15);
         }
 
-        .origin-pin .pin-label {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px; font-weight: 700;
-            color: #e8a090;
-            white-space: nowrap;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-            text-align: center;
-        }
-
-        .origin-pin .pin-sub {
-            font-size: 8.5px; font-weight: 400;
-            color: rgba(232,160,144,0.6);
-        }
-
-        .dest-pin {
-            position: absolute;
-            right: 12%;
-            top: 42%;
-            width: 32px; height: 32px;
-            margin: -16px 0 0 -16px;
-            z-index: 5;
-        }
-
-        .dest-pin .pin-head {
-            width: 32px; height: 32px; border-radius: 50%;
+        .dm-home-marker {
+            width: 30px; height: 30px;
+            border-radius: 50%;
             background: #2f7d6d;
-            border: 3px solid rgba(255,255,255,0.9);
+            border: 3px solid rgba(255,255,255,0.85);
             box-shadow: 0 0 0 5px rgba(47,125,109,0.3), 0 0 20px rgba(47,125,109,0.4);
             display: flex; align-items: center; justify-content: center;
-            font-size: 15px;
+            font-size: 14px;
         }
 
-        .dest-pin .pin-label {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px; font-weight: 700;
-            color: #8fd4c4;
+        .dm-team-marker {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
+
+        .dm-team-dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: #0984e3;
+            border: 2.5px solid rgba(255,255,255,0.85);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .dm-team-dot.deployed {
+            background: #ffb454;
+            animation: dmPulseTeam 1.2s infinite;
+        }
+
+        @keyframes dmPulseTeam {
+            0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 2px 18px rgba(255,180,84,0.5); }
+        }
+
+        .dm-team-label {
+            background: rgba(18,21,42,0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid #2a3355;
+            border-radius: 5px;
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 700;
+            color: rgba(200,210,230,0.8);
             white-space: nowrap;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-            text-align: center;
         }
 
-        .dest-pin .pin-sub {
-            font-size: 8.5px; font-weight: 400;
-            color: rgba(143,212,196,0.6);
+        .dm-ambulance-marker {
+            display: flex; flex-direction: column; align-items: center; gap: 1px;
         }
 
-        .route-svg {
-            position: absolute;
-            inset: 0;
-            width: 100%; height: 100%;
-            z-index: 3;
-            pointer-events: none;
-        }
-
-        .route-path {
-            stroke: rgba(255,180,84,0.6);
-            stroke-width: 0.35;
-            stroke-dasharray: 1.2 0.6;
-            fill: none;
-            filter: drop-shadow(0 0 0.6px rgba(255,180,84,0.5));
-        }
-
-        .route-path-glow {
-            stroke: rgba(255,180,84,0.12);
-            stroke-width: 1.2;
-            stroke-dasharray: 1.2 0.6;
-            fill: none;
-        }
-
-        .ambulance {
-            position: absolute;
-            z-index: 6;
-            width: 38px; height: 22px;
+        .dm-amb-icon {
+            width: 32px; height: 20px;
             background: #fff;
             border-radius: 4px;
             border: 2px solid #e74c3c;
             display: flex; align-items: center; justify-content: center;
-            font-size: 13px;
+            font-size: 12px;
             box-shadow: 0 0 12px rgba(255,255,255,0.3);
-            margin: -11px 0 0 -19px;
+            position: relative;
         }
 
-        .ambulance .amb-light {
+        .dm-amb-light {
             position: absolute;
-            top: -4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 10px; height: 4px;
-            border-radius: 2px;
-            animation: ambFlash 0.4s infinite alternate;
-        }
-
-        @keyframes ambFlash {
-            from { background: #3498db; box-shadow: 0 0 8px rgba(52,152,219,0.6); }
-            to { background: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.6); }
-        }
-
-        .ambulance .amb-cross {
-            position: absolute;
-            top: 2px; right: 2px;
-            width: 6px; height: 6px;
+            top: -4px; right: -4px;
+            width: 8px; height: 8px;
+            border-radius: 50%;
             background: #e74c3c;
-            border-radius: 1px;
+            animation: dmAmbFlash 0.6s infinite alternate;
+        }
+
+        @keyframes dmAmbFlash {
+            from { opacity: 0.3; box-shadow: 0 0 4px #e74c3c; }
+            to { opacity: 1; box-shadow: 0 0 12px #e74c3c; }
+        }
+
+        .dm-amb-label {
+            background: rgba(18,21,42,0.85);
+            border: 1px solid rgba(231,76,60,0.4);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-size: 8px;
+            font-weight: 700;
+            color: #ff8c6b;
+            white-space: nowrap;
+        }
+
+        .dm-sensor-marker {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #6c5ce7;
+            border: 2px solid rgba(108,92,231,0.4);
+            box-shadow: 0 0 10px rgba(108,92,231,0.4);
+        }
+
+        .dm-sensor-marker.alert {
+            background: #fd79a8;
+            border-color: rgba(253,121,168,0.4);
+            box-shadow: 0 0 14px rgba(253,121,168,0.5);
+            animation: dmPulseAlert 1.5s infinite;
+        }
+
+        @keyframes dmPulseAlert {
+            0%, 100% { box-shadow: 0 0 8px rgba(253,121,168,0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(253,121,168,0.7); transform: scale(1.15); }
+        }
+
+        .dm-tooltip-custom {
+            background: #1a1a2e !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            font-size: 11px;
+            padding: 7px 10px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .dm-tooltip-custom::before { border-top-color: #1a1a2e !important; }
+        .leaflet-tooltip-top::before { border-top-color: #1a1a2e !important; }
+
+        .leaflet-control-zoom a {
+            background: #1a1a2e !important;
+            color: rgba(255,255,255,0.5) !important;
+            border-color: rgba(255,255,255,0.06) !important;
+        }
+
+        .leaflet-control-zoom a:hover { color: #fff !important; }
+
+        /* Dispatch sidebar panel */
+        .dispatch-side {
+            width: 280px;
+            background: #12152a;
+            border-left: 1px solid #1e2640;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .dispatch-side::-webkit-scrollbar { width: 4px; }
+        .dispatch-side::-webkit-scrollbar-thumb { background: #2a3355; border-radius: 2px; }
+
+        .ds-section {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(42,51,85,0.4);
+        }
+
+        .ds-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #5a6488;
+            margin-bottom: 8px;
+        }
+
+        .ds-hospital-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 9px;
+            border-radius: 6px;
+            border: 1px solid rgba(42,51,85,0.5);
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 11px;
+            color: rgba(200,210,230,0.7);
+        }
+
+        .ds-hospital-item:hover { border-color: rgba(225,112,85,0.4); background: rgba(225,112,85,0.06); }
+        .ds-hospital-item.selected { border-color: #e17055; background: rgba(225,112,85,0.1); color: #e8a090; }
+
+        .ds-h-icon {
+            width: 22px; height: 22px;
+            border-radius: 6px;
+            background: rgba(225,112,85,0.15);
+            color: #e17055;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .ds-h-dist {
+            margin-left: auto;
+            font-size: 10px;
+            color: #5a6488;
+            font-family: Consolas, monospace;
+        }
+
+        .ds-team-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 9px;
+            border-radius: 6px;
+            border: 1px solid rgba(42,51,85,0.5);
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: rgba(200,210,230,0.7);
+        }
+
+        .ds-t-icon {
+            width: 22px; height: 22px;
+            border-radius: 6px;
+            background: rgba(9,132,227,0.15);
+            color: #0984e3;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .ds-t-status {
+            margin-left: auto;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .ds-t-status.ready { color: #00cec9; }
+        .ds-t-status.deployed { color: #ffb454; }
+
+        .ds-deploy-btn {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            background: linear-gradient(135deg, #2f7d6d, #4cd7c4);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 6px;
+        }
+
+        .ds-deploy-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .ds-deploy-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .ds-transport { display: none; }
+        .ds-transport.show { display: block; }
+
+        .ds-tp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .ds-tp-phase {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffb454;
+        }
+
+        .ds-tp-eta {
+            font-size: 10px;
+            color: #5a6488;
+            font-family: Consolas, monospace;
+        }
+
+        .ds-tp-bar {
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(42,51,85,0.5);
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .ds-tp-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #ffb454, #4cd7c4);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .ds-tp-detail {
+            font-size: 10px;
+            color: #5a6488;
+            line-height: 1.4;
+        }
+
+        .ds-feed {
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .ds-feed::-webkit-scrollbar { width: 3px; }
+        .ds-feed::-webkit-scrollbar-thumb { background: #2a3355; border-radius: 2px; }
+
+        .ds-feed-msg {
+            font-size: 10px;
+            color: #5a6488;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(42,51,85,0.3);
+            line-height: 1.4;
+        }
+
+        .ds-feed-msg:last-child { border-bottom: none; }
+        .ds-feed-msg .time { color: #3d4466; margin-right: 4px; font-family: Consolas, monospace; font-size: 9px; }
+        .ds-feed-msg .team-label { color: #ffb454; font-weight: 700; margin-right: 3px; }
+
+        .ds-otp {
+            margin-top: 8px;
+            background: rgba(255,180,84,0.08);
+            border: 1px solid rgba(255,180,84,0.25);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .ds-otp-label {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: rgba(255,180,84,0.6);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .ds-otp-code {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            color: #ffb454;
+            font-family: Consolas, monospace;
+            text-shadow: 0 0 12px rgba(255,180,84,0.3);
+        }
+
+        .dispatch-phases {
+            display: flex;
+            gap: 4px;
+            padding: 8px 14px;
+            background: #0e1220;
+            border-top: 1px solid #1e2640;
+            flex-shrink: 0;
+        }
+
+        .dp-step {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 99px;
+            background: rgba(20,25,42,0.85);
+            border: 1px solid #2a3355;
+            font-size: 9px;
+            font-weight: 600;
+            color: #5a6488;
+            transition: all 0.4s;
+        }
+
+        .dp-step.active {
+            background: rgba(201,106,59,0.15);
+            border-color: rgba(201,106,59,0.4);
+            color: #ffb454;
+        }
+
+        .dp-step.done {
+            background: rgba(47,125,109,0.12);
+            border-color: rgba(47,125,109,0.3);
+            color: #4cd7c4;
+        }
+
+        .dp-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .dp-step.active .dp-dot { animation: pulse 1.2s infinite; }
+
+        .dispatch-confirm {
+            padding: 10px 14px;
+            background: #12152a;
+            border-top: 1px solid #1e2640;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .dispatch-confirm button {
+            padding: 10px 24px;
+            border-radius: 99px;
+            border: none;
+            background: linear-gradient(135deg, #2f7d6d, #4cd7c4);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(47,125,109,0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s, transform 0.2s;
+        }
+
+        .dispatch-confirm button.show { opacity: 1; pointer-events: auto; }
+        .dispatch-confirm button:hover { transform: translateY(-2px); }
+
+        .dispatch-audit {
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 8px 14px;
+            background: #0e1220;
+            border-top: 1px solid #1e2640;
+            display: none;
+        }
+
+        .dispatch-audit.show { display: block; }
+
+        .dispatch-audit::-webkit-scrollbar { width: 3px; }
+        .dispatch-audit::-webkit-scrollbar-thumb { background: #2a3355; border-radius: 2px; }
+
+        .dispatch-audit-title {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: #5a6488;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .audit-line {
+            font-size: 9.5px;
+            font-family: Consolas, monospace;
+            padding: 1.5px 0;
+            line-height: 1.5;
+            color: rgba(200,210,230,0.6);
+        }
+
+        .audit-line .audit-ts { color: #3d4466; margin-right: 5px; }
+        .audit-line.head { color: #ffb454; font-weight: 700; }
+        .audit-line.ok { color: #4cd7c4; }
+        .audit-line.alert { color: #e74c3c; }
+
+        @media (max-width: 780px) {
+            .dispatch-side { display: none; }
+            .dispatch-phases { flex-wrap: wrap; }
+            .dispatch-map-wrap { width: 98vw; height: 80vh; }
         }
 
         .dispatch-header {
@@ -1436,7 +1796,7 @@
         document.getElementById('signOutBtn').addEventListener('click', async () => {
             try { await api.signOut(); } catch (e) {}
             sessionStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         });
 
         let MONITOR_SIG = '';
@@ -1617,6 +1977,7 @@
         let emState = EM.IDLE;
         let emTimers = [];
         let emTimeline = [];
+        let dispatchMap = null;
 
         function emSchedule(fn, ms) {
             const id = setTimeout(fn, ms);
@@ -1659,19 +2020,120 @@
                 ov.classList.remove('show');
                 setTimeout(() => { if (ov.parentNode) ov.remove(); }, 500);
             }
+            if (dispatchMap) { dispatchMap.remove(); dispatchMap = null; }
         }
 
+        /* ── Hospital / Team data for dispatch map ── */
+        const DISPATCH_HOSPITALS = [
+            { id: 'H001', name: 'Manipal Hospital', addr: 'Old Airport Road, Bengaluru', lat: 12.9612, lng: 77.6412 },
+            { id: 'H002', name: 'Apollo Hospital', addr: 'Bannerghatta Road, Bengaluru', lat: 12.8888, lng: 77.5991 },
+            { id: 'H003', name: 'Narayana Health', addr: 'Bommasandra, Bengaluru', lat: 12.8210, lng: 77.6830 },
+            { id: 'H004', name: 'Fortis Hospital', addr: 'Bannerghatta Road, Bengaluru', lat: 12.8930, lng: 77.5960 },
+            { id: 'H005', name: 'Ramaiah Hospital', addr: 'New BEL Road, Bengaluru', lat: 13.0265, lng: 77.5640 },
+            { id: 'H006', name: 'Vydehi Hospital', addr: 'Whitefield, Bengaluru', lat: 12.9720, lng: 77.7480 },
+        ];
+
+        const DISPATCH_TEAMS = [
+            { id: 'T001', name: 'Alpha Response', crew: 'Dr. Priya, Nurse Ravi', lat: 12.9758, lng: 77.6085 },
+            { id: 'T002', name: 'Bravo Medic', crew: 'Dr. Arjun, EMT Kavitha', lat: 12.9698, lng: 77.7500 },
+            { id: 'T003', name: 'Charlie First Aid', crew: 'Dr. Sneha, Nurse Manoj', lat: 12.8453, lng: 77.6602 },
+        ];
+
+        const DISPATCH_FEED_MSGS = {
+            approaching: ['En route to patient. Traffic moderate.', 'Navigating current route. ETA updated.', 'Almost at the scene.', 'Approaching from the north.'],
+            arrived: ['Arrived at patient location. Assessing.', 'On scene. Patient stable. Beginning assessment.', 'Reached the location. Checking vitals.'],
+            transporting: ['Patient loaded. Heading to {hospital}. ETA {eta} min.', 'Ambulance mobile. Patient stable. Route clear.', 'Transporting to {hospital}. Moderate traffic.'],
+            traffic: ['Heavy traffic on current road.', 'Signal delay. +2 min to ETA.', 'Clear road ahead.', 'Slowly progressing through market area.'],
+            arriving: ['Approaching {hospital}. Preparing handoff.', 'Almost at hospital. ER team alerted.', '500m from {hospital}. Final approach.'],
+            atHospital: ['Patient handed over to ER at {hospital}.', 'Transfer complete at {hospital}.', 'Mission complete. Patient stable at {hospital}.']
+        };
+
+        function dispatchPickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+        function dispatchHaversine(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        async function dispatchBuildRoute(fromLat, fromLng, toLat, toLng) {
+            try {
+                const url = 'https://router.project-osrm.org/route/v1/driving/' + fromLng + ',' + fromLat + ';' + toLng + ',' + toLat + '?overview=full&geometries=geojson';
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.routes && data.routes.length > 0) {
+                    return data.routes[0].geometry.coordinates.map(function(c) { return [c[1], c[0]]; });
+                }
+            } catch (e) {}
+            var dist = dispatchHaversine(fromLat, fromLng, toLat, toLng);
+            var numPts = Math.max(4, Math.min(12, Math.round(dist * 3)));
+            var r = [[fromLat, fromLng]];
+            for (var i = 1; i < numPts; i++) {
+                var t = i / numPts;
+                r.push([fromLat + (toLat - fromLat) * t + (Math.random() - 0.5) * 0.001, fromLng + (toLng - fromLng) * t + (Math.random() - 0.5) * 0.001]);
+            }
+            r.push([toLat, toLng]);
+            return r;
+        }
+
+        function dispatchAnimateRoute(marker, route, speedMs, cb) {
+            var tickMs = 200;
+            var totalSteps = Math.max(5, Math.round(speedMs / tickMs));
+            var step = 0;
+            var iv = setInterval(function () {
+                step++;
+                var seg = (route.length - 1) * (step / totalSteps);
+                var i = Math.floor(seg);
+                var t = seg - i;
+                var a = route[i], b = route[Math.min(i + 1, route.length - 1)];
+                var lat = a[0] + (b[0] - a[0]) * t;
+                var lng = a[1] + (b[1] - a[1]) * t;
+                marker.setLatLng([lat, lng]);
+                if (step >= totalSteps) {
+                    clearInterval(iv);
+                    marker.setLatLng(route[route.length - 1]);
+                    if (cb) cb();
+                }
+            }, tickMs);
+            return iv;
+        }
+
+        function dispatchAddFeed(feedEl, teamName, msg) {
+            if (!feedEl) return;
+            var now = new Date();
+            var time = now.toTimeString().slice(0, 8);
+            var div = document.createElement('div');
+            div.className = 'ds-feed-msg';
+            div.innerHTML = '<span class="time">' + time + '</span><span class="team-label">' + teamName + '</span> ' + msg;
+            feedEl.appendChild(div);
+            feedEl.scrollTop = feedEl.scrollHeight;
+        }
+
+        /* ── Build real Leaflet dispatch overlay ── */
         function buildDispatchOverlay(sensor) {
             closeDispatchOverlay();
             emTimeline = [];
 
-            const res = PROFILE.residence || {};
-            const senior = PROFILE.senior || {};
-            const addr = (res.flat || 'Flat 402') + (res.area ? ', ' + res.area : '') + (res.city ? ', ' + res.city : '');
+            var res = PROFILE.residence || {};
+            var senior = PROFILE.senior || {};
+            var addr = (res.flat || 'Flat 402') + (res.area ? ', ' + res.area : '') + (res.city ? ', ' + res.city : '');
+            var homeLat = res.lat || 12.9716;
+            var homeLng = res.lng || 77.5946;
 
-            const ov = document.createElement('div');
+            var ov = document.createElement('div');
             ov.className = 'dispatch-overlay';
             ov.id = 'dispatchOverlay';
+
+            var nearestHospital = DISPATCH_HOSPITALS.reduce(function (best, h) {
+                var d = dispatchHaversine(homeLat, homeLng, h.lat, h.lng);
+                return d < best.dist ? { hospital: h, dist: d } : best;
+            }, { hospital: DISPATCH_HOSPITALS[0], dist: Infinity }).hospital;
+
+            var sortedHospitals = DISPATCH_HOSPITALS.slice().sort(function (a, b) {
+                return dispatchHaversine(homeLat, homeLng, a.lat, a.lng) - dispatchHaversine(homeLat, homeLng, b.lat, b.lng);
+            });
 
             ov.innerHTML =
                 '<div class="dispatch-map-wrap">' +
@@ -1682,47 +2144,28 @@
                         '</div>' +
                         '<div class="dispatch-status-pill" id="dispatchPill">DISPATCHING...</div>' +
                     '</div>' +
-                    '<div class="dispatch-map">' +
-                        '<div class="map-grid"></div>' +
-                        '<div class="map-road-h" style="top:28%"></div>' +
-                        '<div class="map-road-h" style="top:50%"></div>' +
-                        '<div class="map-road-h" style="top:72%"></div>' +
-                        '<div class="map-road-v" style="left:22%"></div>' +
-                        '<div class="map-road-v" style="left:48%"></div>' +
-                        '<div class="map-road-v" style="left:74%"></div>' +
-                        '<div class="map-label road" style="top:25%;left:28%;transform:rotate(-2deg)">Hosur Road</div>' +
-                        '<div class="map-label road" style="top:47%;left:36%">Whitefield Main Road</div>' +
-                        '<div class="map-label road" style="left:19%;top:56%;transform:rotate(90deg)">Prestige Street</div>' +
-                        '<div class="map-label" style="top:22%;left:5%;font-size:9px;color:rgba(232,160,144,0.45)">Bengaluru Urban</div>' +
-                        '<div class="origin-pin">' +
-                            '<div class="pin-head"><span>\uD83C\uDFE5</span></div>' +
-                            '<div class="pin-label">Manipal Hospital Emergency<div class="pin-sub">Dispatch Origin</div></div>' +
-                        '</div>' +
-                        '<div class="dest-pin">' +
-                            '<div class="pin-head"><span>\uD83C\uDFE0</span></div>' +
-                            '<div class="pin-label">' + (res.flat || 'Flat 402') + ' &mdash; ' + senior.name + '<div class="pin-sub">Destination</div></div>' +
-                        '</div>' +
-                        '<svg class="route-svg" viewBox="0 0 100 100" preserveAspectRatio="none">' +
-                            '<path class="route-path-glow" d="M 14,40 C 30,34 46,28 55,33 C 64,38 74,40 86,44"/>' +
-                            '<path class="route-path" d="M 14,40 C 30,34 46,28 55,33 C 64,38 74,40 86,44"/>' +
-                        '</svg>' +
-                        '<div class="ambulance" id="ambulanceIcon" style="left:14%;top:40%">' +
-                            '<div class="amb-light"></div>' +
-                            '<span>\uD83D\uDE91</span>' +
-                            '<div class="amb-cross"></div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="dispatch-card" id="dispatchCard">' +
-                        '<div class="dispatch-card-title">UNIT DISPATCH DETAILS <span class="dc-badge">ALS</span></div>' +
-                        '<div class="dc-row"><span class="dc-label">Unit ID</span><span class="dc-value">KA-53-MC-1204</span></div>' +
-                        '<div class="dc-row"><span class="dc-label">Type</span><span class="dc-value">Advanced Life Support</span></div>' +
-                        '<div class="dc-row"><span class="dc-label">Paramedic Lead</span><span class="dc-value">Ravi K.</span></div>' +
-                        '<div class="dc-row"><span class="dc-label">Contact</span><span class="dc-value">112 Dispatch</span></div>' +
-                        '<div class="dc-row"><span class="dc-label">Live ETA</span><span class="dc-value eta" id="etaDisplay">--:--</span></div>' +
-                        '<div class="dc-row"><span class="dc-label">Distance</span><span class="dc-value dist" id="distDisplay">-- km</span></div>' +
-                        '<div class="dc-otp">' +
-                            '<div class="dc-otp-label">Digital Lockbox OTP for Paramedic Entry</div>' +
-                            '<div class="dc-otp-code" id="dispatchOtp">----</div>' +
+                    '<div class="dispatch-body">' +
+                        '<div class="dispatch-map"><div id="dmMap"></div></div>' +
+                        '<div class="dispatch-side">' +
+                            '<div class="ds-section"><div class="ds-label">Nearby Hospitals</div><div id="dmHospitalList">' +
+                                sortedHospitals.map(function (h) {
+                                    var d = dispatchHaversine(homeLat, homeLng, h.lat, h.lng).toFixed(1);
+                                    return '<div class="ds-hospital-item" data-hid="' + h.id + '"><div class="ds-h-icon">H</div><span>' + h.name + '</span><span class="ds-h-dist">' + d + ' km</span></div>';
+                                }).join('') +
+                            '</div></div>' +
+                            '<div class="ds-section"><div class="ds-label">Response Teams</div><div id="dmTeamList">' +
+                                DISPATCH_TEAMS.map(function (t) {
+                                    return '<div class="ds-team-item"><div class="ds-t-icon">' + t.name[0] + '</div><span>' + t.name + '</span><span class="ds-t-status ready">Ready</span></div>';
+                                }).join('') +
+                            '</div></div>' +
+                            '<div class="ds-section ds-transport" id="dmTransport">' +
+                                '<div class="ds-label">Transport Status</div>' +
+                                '<div class="ds-tp-header"><span class="ds-tp-phase" id="dmTpPhase">Dispatching...</span><span class="ds-tp-eta" id="dmTpEta">ETA: --</span></div>' +
+                                '<div class="ds-tp-bar"><div class="ds-tp-fill" id="dmTpFill"></div></div>' +
+                                '<div class="ds-tp-detail" id="dmTpDetail">Waiting for deployment...</div>' +
+                                '<div class="ds-otp"><div class="ds-otp-label">Digital Lockbox OTP</div><div class="ds-otp-code" id="dmOtp">' + String(Math.floor(1000 + Math.random() * 9000)) + '</div></div>' +
+                            '</div>' +
+                            '<div class="ds-section"><div class="ds-label">Live Feed</div><div class="ds-feed" id="dmFeed"></div></div>' +
                         '</div>' +
                     '</div>' +
                     '<div class="dispatch-phases" id="dispatchPhases">' +
@@ -1732,49 +2175,192 @@
                         '<div class="dp-step"><span class="dp-dot"></span>En Route</div>' +
                         '<div class="dp-step"><span class="dp-dot"></span>Arrival</div>' +
                     '</div>' +
-                    '<button class="dispatch-confirm" id="dispatchConfirm">Confirm Ambulance Arrival &amp; Medical Handoff</button>' +
+                    '<div class="dispatch-confirm" id="dispatchConfirmWrap"><button id="dispatchConfirm">Confirm Ambulance Arrival &amp; Medical Handoff</button></div>' +
                     '<div class="dispatch-audit" id="dispatchAudit"><div class="dispatch-audit-title">INCIDENT TIMELINE &amp; AUDIT LOG</div></div>' +
                 '</div>';
 
             document.body.appendChild(ov);
-            requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('show')));
+            requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add('show'); }); });
 
-            document.getElementById('dispatchConfirm').addEventListener('click', () => resolveEmergency(sensor));
-        }
+            document.getElementById('dispatchConfirm').addEventListener('click', function () { resolveEmergency(sensor); });
 
-        function moveAmbulance() {
-            const amb = document.getElementById('ambulanceIcon');
-            if (!amb) return;
-            const wp = [
-                { x: 14, y: 40 }, { x: 22, y: 37 }, { x: 32, y: 33 },
-                { x: 44, y: 30 }, { x: 55, y: 33 }, { x: 65, y: 37 },
-                { x: 76, y: 41 }, { x: 86, y: 44 }
-            ];
-            let seg = 0;
-            const dur = 1800;
-            function advance() {
-                if (seg >= wp.length - 1) return;
-                const a = wp[seg], b = wp[seg + 1];
-                const t0 = Date.now();
-                const iv = setInterval(() => {
-                    const p = Math.min(1, (Date.now() - t0) / dur);
-                    const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-                    amb.style.left = (a.x + (b.x - a.x) * ease) + '%';
-                    amb.style.top = (a.y + (b.y - a.y) * ease) + '%';
-                    if (p >= 1) { clearInterval(iv); seg++; advance(); }
-                }, 30);
-            }
-            advance();
-        }
+            /* ── Init Leaflet map ── */
+            setTimeout(function () {
+                var mapEl = document.getElementById('dmMap');
+                if (!mapEl) return;
 
-        function updateEta(elapsed) {
-            const totalSec = 420;
-            const remain = Math.max(0, totalSec - Math.round(elapsed));
-            const m = Math.floor(remain / 60), s = remain % 60;
-            const etaEl = document.getElementById('etaDisplay');
-            const distEl = document.getElementById('distDisplay');
-            if (etaEl) etaEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-            if (distEl) distEl.textContent = ((remain / totalSec) * 3.2).toFixed(1) + ' km';
+                dispatchMap = L.map('dmMap', {
+                    center: [homeLat, homeLng],
+                    zoom: 13,
+                    zoomControl: true,
+                    attributionControl: false
+                });
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(dispatchMap);
+
+                /* Home marker */
+                var homeIcon = L.divIcon({ className: '', html: '<div class="dm-home-marker">\uD83C\uDFE0</div>', iconSize: [30, 30], iconAnchor: [15, 15] });
+                L.marker([homeLat, homeLng], { icon: homeIcon }).addTo(dispatchMap)
+                    .bindTooltip('<div style="font-weight:600;margin-bottom:2px;">' + (res.flat || 'Home') + '</div><div style="opacity:0.5;font-size:11px;">Patient destination</div>', { className: 'dm-tooltip-custom', direction: 'top', offset: [0, -16] });
+
+                /* Sensor marker (alert) */
+                var sensorIcon = L.divIcon({ className: '', html: '<div class="dm-sensor-marker alert"></div>', iconSize: [10, 10], iconAnchor: [5, 5] });
+                L.marker([homeLat + 0.0008, homeLng + 0.0005], { icon: sensorIcon }).addTo(dispatchMap)
+                    .bindTooltip('<div style="font-weight:600;">Sensor ' + sensor.id + '</div><div style="opacity:0.5;font-size:11px;">' + sensor.room + ' &mdash; FALL DETECTED</div>', { className: 'dm-tooltip-custom', direction: 'top', offset: [0, -8] });
+
+                /* Hospital markers */
+                var hospitalMarkers = {};
+                DISPATCH_HOSPITALS.forEach(function (h) {
+                    var icon = L.divIcon({ className: '', html: '<div class="dm-hospital-marker' + (h.id === nearestHospital.id ? ' selected' : '') + '" id="dmH_' + h.id + '">H</div>', iconSize: [28, 28], iconAnchor: [14, 14] });
+                    var marker = L.marker([h.lat, h.lng], { icon: icon }).addTo(dispatchMap);
+                    marker.bindTooltip('<div style="font-weight:600;margin-bottom:2px;">' + h.name + '</div><div style="opacity:0.5;font-size:11px;">' + h.addr + '</div>', { className: 'dm-tooltip-custom', direction: 'top', offset: [0, -16] });
+                    hospitalMarkers[h.id] = marker;
+                });
+
+                /* Team markers */
+                var teamLMarker = {};
+                DISPATCH_TEAMS.forEach(function (t) {
+                    var icon = L.divIcon({ className: '', html: '<div class="dm-team-marker"><div class="dm-team-dot" id="dmTD_' + t.id + '"></div><div class="dm-team-label">' + t.name.split(' ')[0] + '</div></div>', iconSize: [40, 28], iconAnchor: [20, 14] });
+                    teamLMarker[t.id] = L.marker([t.lat, t.lng], { icon: icon }).addTo(dispatchMap);
+                    teamLMarker[t.id].bindTooltip('<div style="font-weight:600;margin-bottom:2px;">' + t.name + '</div><div style="opacity:0.5;font-size:11px;">' + t.crew + '</div>', { className: 'dm-tooltip-custom', direction: 'top', offset: [0, -14] });
+                });
+
+                /* Hospital list selection */
+                var selectedHospital = nearestHospital;
+                var selectedTeam = null;
+                var feedEl = document.getElementById('dmFeed');
+
+                document.querySelectorAll('#dmHospitalList .ds-hospital-item').forEach(function (el) {
+                    el.addEventListener('click', function () {
+                        document.querySelectorAll('#dmHospitalList .ds-hospital-item').forEach(function (x) { x.classList.remove('selected'); });
+                        el.classList.add('selected');
+                        selectedHospital = DISPATCH_HOSPITALS.find(function (h) { return h.id === el.dataset.hid; });
+                        DISPATCH_HOSPITALS.forEach(function (h) {
+                            var markerEl = document.getElementById('dmH_' + h.id);
+                            if (markerEl) markerEl.classList.toggle('selected', h.id === selectedHospital.id);
+                        });
+                    });
+                });
+
+                /* Dispatch nearest team automatically */
+                var sortedTeams = DISPATCH_TEAMS.map(function (t) {
+                    return { team: t, dist: dispatchHaversine(homeLat, homeLng, t.lat, t.lng) };
+                }).sort(function (a, b) { return a.dist - b.dist; });
+
+                selectedTeam = sortedTeams[0].team;
+
+                dispatchAddFeed(feedEl, 'System', 'Fall detected at ' + sensor.room + '. Initiating emergency dispatch.');
+                emAudit('Fall event detected by ' + sensor.id + ' (' + sensor.room + ')', 'alert');
+
+                /* Start ambulance animation after delay */
+                emSchedule(function () {
+                    emAudit('ALS Unit dispatched from ' + selectedHospital.name, 'head');
+                    emSetPill('AMBULANCE EN ROUTE');
+                    emUpdatePhase(3);
+
+                    dispatchAddFeed(feedEl, selectedTeam.name, 'Deployed from ' + selectedHospital.name + '. En route to patient.');
+
+                    var teamDot = document.getElementById('dmTD_' + selectedTeam.id);
+                    if (teamDot) teamDot.classList.add('deployed');
+
+                    var transportEl = document.getElementById('dmTransport');
+                    if (transportEl) transportEl.classList.add('show');
+
+                    /* Create ambulance marker */
+                    var ambIcon = L.divIcon({ className: '', html: '<div class="dm-ambulance-marker"><div class="dm-amb-icon"><div class="dm-amb-light"></div>\uD83D\uDE91</div><div class="dm-amb-label">ALS Unit</div></div>', iconSize: [40, 32], iconAnchor: [20, 16] });
+                    var ambMarker = L.marker([selectedHospital.lat, selectedHospital.lng], { icon: ambIcon }).addTo(dispatchMap);
+
+                    var distToPatient = dispatchHaversine(selectedHospital.lat, selectedHospital.lng, homeLat, homeLng);
+                    var etaToPatient = Math.max(3, Math.ceil(distToPatient * 2.5));
+                    var totalEta = etaToPatient;
+
+                    document.getElementById('dmTpPhase').textContent = 'Team dispatching to patient';
+                    document.getElementById('dmTpDetail').textContent = selectedTeam.name + ' en route from ' + selectedHospital.name + '. ' + distToPatient.toFixed(1) + ' km, ~' + etaToPatient + ' min.';
+                    document.getElementById('dmTpEta').textContent = 'ETA: ' + etaToPatient + ' min';
+
+                    /* Animate hospital → patient */
+                    dispatchBuildRoute(selectedHospital.lat, selectedHospital.lng, homeLat, homeLng).then(function (route) {
+                        var patientAnimMs = etaToPatient * 60000;
+                        var patientTickMs = 500;
+                        var patientTotal = Math.round(patientAnimMs / patientTickMs);
+                        var patientStep = 0;
+
+                        var patientIv = setInterval(function () {
+                            patientStep++;
+                            var prog = (patientStep / patientTotal) * 45;
+                            document.getElementById('dmTpFill').style.width = Math.min(45, prog) + '%';
+                            document.getElementById('dmTpEta').textContent = 'ETA: ' + Math.max(1, Math.ceil(totalEta * (1 - patientStep / patientTotal))) + ' min';
+                        }, patientTickMs);
+
+                        /* Also draw the route on map */
+                        L.polyline(route, { color: '#ffb454', weight: 3, opacity: 0.7, dashArray: '8 6' }).addTo(dispatchMap);
+
+                        dispatchAnimateRoute(ambMarker, route, patientAnimMs, function () {
+                            clearInterval(patientIv);
+                            document.getElementById('dmTpFill').style.width = '45%';
+                            document.getElementById('dmTpPhase').textContent = 'Team arrived at patient';
+                            document.getElementById('dmTpDetail').textContent = selectedTeam.name + ' has arrived at ' + sensor.room + '. Patient assessment in progress.';
+                            dispatchAddFeed(feedEl, selectedTeam.name, dispatchPickRandom(DISPATCH_FEED_MSGS.arrived));
+                            emAudit('Team arrived at patient location', 'ok');
+
+                            setTimeout(function () {
+                                document.getElementById('dmTpPhase').textContent = 'Transporting to ' + selectedHospital.name;
+                                document.getElementById('dmTpDetail').textContent = 'Patient loaded. Heading to ' + selectedHospital.name + '. ' + distToPatient.toFixed(1) + ' km, ~' + etaToPatient + ' min.';
+                                dispatchAddFeed(feedEl, selectedTeam.name, dispatchPickRandom(DISPATCH_FEED_MSGS.transporting).replace('{hospital}', selectedHospital.name).replace('{eta}', etaToPatient).replace('{dist}', distToPatient.toFixed(1)));
+
+                                /* Animate patient → hospital */
+                                var hospAnimMs = etaToPatient * 60000;
+                                var hospTickMs = 500;
+                                var hospTotal = Math.round(hospAnimMs / hospTickMs);
+                                var hospStep = 0;
+
+                                var hospIv = setInterval(function () {
+                                    hospStep++;
+                                    var prog = 45 + (hospStep / hospTotal) * 55;
+                                    document.getElementById('dmTpFill').style.width = Math.min(100, prog) + '%';
+                                    document.getElementById('dmTpEta').textContent = 'ETA: ' + Math.max(0, Math.ceil(etaToPatient * (1 - hospStep / hospTotal))) + ' min';
+                                    if (hospStep / hospTotal > 0.3) {
+                                        document.getElementById('dmTpPhase').textContent = 'Approaching ' + selectedHospital.name;
+                                        document.getElementById('dmTpDetail').textContent = 'Almost at ' + selectedHospital.name + '. ER team notified.';
+                                    }
+                                    if (hospStep % 8 === 0) {
+                                        dispatchAddFeed(feedEl, selectedTeam.name, dispatchPickRandom(DISPATCH_FEED_MSGS.traffic));
+                                    }
+                                }, hospTickMs);
+
+                                dispatchBuildRoute(homeLat, homeLng, selectedHospital.lat, selectedHospital.lng).then(function (route2) {
+                                    L.polyline(route2, { color: '#4cd7c4', weight: 3, opacity: 0.7, dashArray: '8 6' }).addTo(dispatchMap);
+                                    dispatchAnimateRoute(ambMarker, route2, hospAnimMs, function () {
+                                        clearInterval(hospIv);
+                                        document.getElementById('dmTpFill').style.width = '100%';
+                                        document.getElementById('dmTpPhase').textContent = 'Transfer complete';
+                                        document.getElementById('dmTpDetail').textContent = 'Patient successfully transferred to ' + selectedHospital.name + '.';
+                                        document.getElementById('dmTpEta').textContent = 'Mission complete';
+                                        dispatchAddFeed(feedEl, selectedTeam.name, dispatchPickRandom(DISPATCH_FEED_MSGS.atHospital).replace('{hospital}', selectedHospital.name));
+                                        emAudit('Patient transferred to ' + selectedHospital.name + ' &mdash; mission complete', 'ok');
+
+                                        emSetPill('RESOLVED', 'resolved');
+                                        emUpdatePhase(4);
+                                        document.getElementById('dispatchConfirm').classList.add('show');
+                                        document.getElementById('dispatchAudit').classList.add('show');
+                                    });
+                                });
+                            }, 2500);
+                        });
+                    });
+
+                    /* ETA timer */
+                    var t0 = Date.now();
+                    var etaIv = setInterval(function () {
+                        var elapsed = (Date.now() - t0) / 1000;
+                        var remain = Math.max(0, (totalEta * 60) - Math.round(elapsed));
+                        var m = Math.floor(remain / 60), s = remain % 60;
+                        var etaText = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                        document.getElementById('dmTpEta').textContent = 'ETA: ' + etaText;
+                        if (remain <= 0) clearInterval(etaIv);
+                    }, 1000);
+                }, 4000);
+            }, 300);
         }
 
         function resolveEmergency(sensor) {
@@ -1882,36 +2468,10 @@
                 emSetPill('AMBULANCE EN ROUTE', '');
 
                 buildDispatchOverlay(sensor);
-                moveAmbulance();
-
-                const otpCode = '4921';
-                const otpEl = document.getElementById('dispatchOtp');
-                if (otpEl) otpEl.textContent = otpCode;
 
                 emAudit('Dispatch map activated &mdash; live tracking enabled', '');
-                emAudit('Digital lockbox OTP generated: ' + otpCode + ' (valid for paramedic entry)', '');
-
-                const t0 = Date.now();
-                const etaIv = setInterval(() => {
-                    const el = (Date.now() - t0) / 1000;
-                    updateEta(el);
-                    if (el >= 420) clearInterval(etaIv);
-                }, 1000);
-                updateEta(0);
+                emAudit('Digital lockbox OTP generated (valid for paramedic entry)', '');
             }, 6500);
-
-            emSchedule(() => {
-                emState = EM.ARRIVING;
-                emUpdatePhase(4);
-                emSetPill('AMBULANCE ARRIVING', 'arriving');
-                emAudit('Ambulance approaching destination &mdash; ETA < 1 min', 'head');
-
-                const btn = document.getElementById('dispatchConfirm');
-                if (btn) btn.classList.add('show');
-
-                const audit = document.getElementById('dispatchAudit');
-                if (audit) audit.classList.add('show');
-            }, 22000);
         }
 
         function triggerFall(sensor, cardEl) {
@@ -1946,7 +2506,7 @@
         (async function boot() {
             try {
                 const s = await api.session();
-                if (!s) { window.location.href = 'login.html'; return; }
+                if (!s) { window.location.href = 'index.html'; return; }
                 SESSION_USER = s.user;
                 PROFILE = s.profile;
                 SESSION_INFO = s.session || null;
@@ -1958,7 +2518,7 @@
                 buildMonitor();
                 startSim();
             } catch (e) {
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
                 return;
             }
             setInterval(tickOtpTimer, 1000);

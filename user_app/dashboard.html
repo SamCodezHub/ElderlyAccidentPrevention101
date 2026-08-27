@@ -699,7 +699,7 @@
                 const s = await window.electronAPI.session();
                 user = s ? s.user : null;
             } catch (e) { user = null; }
-            if (!user) { window.location.href = 'login.html'; return; }
+            if (!user) { window.location.href = 'index.html'; return; }
             if (user.role !== 'moderator') { window.location.href = 'family-dashboard.html'; return; }
             sessionStorage.setItem('currentUser', JSON.stringify(user));
             document.getElementById('uName').textContent = user.name;
@@ -708,7 +708,7 @@
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             try { await window.electronAPI.signOut(); } catch (e) {}
             sessionStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         });
 
         const bangaloreCenter = [12.9716, 77.5946];

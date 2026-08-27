@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eldercare — AI-Powered Elderly Safety System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #f7f1e9;
+            --card: #fffdfb;
+            --ink: #3d2f26;
+            --muted: #97826f;
+            --faint: #c9b8a5;
+            --line: #ecdfd0;
+            --accent: #c96a3b;
+            --accent-dark: #a95327;
+            --green: #2f7d6d;
+            --blue: #0984e3;
+            --red: #b3402e;
+            --font-hero: 'DM Serif Display', Georgia, serif;
+            --font-section-a: 'Playfair Display', Georgia, serif;
+            --font-section-b: 'Space Grotesk', 'Segoe UI', sans-serif;
+            --font-section-c: 'Outfit', 'Segoe UI', sans-serif;
+            --font-section-d: 'Libre Baskerville', Georgia, serif;
+            --font-section-e: 'Instrument Sans', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(160px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .g1 { top: -220px; left: -140px; width: 520px; height: 520px; background: rgba(201,106,59,0.10); }
+        .g2 { bottom: -180px; right: -120px; width: 440px; height: 440px; background: rgba(47,125,109,0.08); }
+        .g3 { top: 40%; left: 60%; width: 360px; height: 360px; background: rgba(9,132,227,0.05); }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: rgba(247,241,233,0.88);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--line);
+            padding: 0 48px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 200;
+        }
+
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+
+        .brand-mark {
+            width: 36px; height: 36px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--accent), #e0915f);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 18px rgba(201,106,59,0.28);
+        }
+
+        .brand-mark svg { width: 20px; height: 20px; fill: #fff; }
+
+        .brand-name {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 32px; }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--ink); }
+
+        .nav-cta {
+            padding: 9px 24px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), #d98a55);
+            color: #fff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(201,106,59,0.28);
+            transition: all 0.25s !important;
+        }
+
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(201,106,59,0.38); }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            padding: 150px 48px 100px;
+            max-width: 1060px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 7px 18px;
+            border-radius: 99px;
+            background: rgba(201,106,59,0.08);
+            border: 1px solid rgba(201,106,59,0.15);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 28px;
+        }
+
+        .hero h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.12;
+            margin-bottom: 22px;
+            color: var(--ink);
+        }
+
+        .hero h1 span { color: var(--accent); }
+
+        .hero-sub {
+            font-size: 18px;
+            color: var(--muted);
+            max-width: 640px;
+            margin: 0 auto 40px;
+            line-height: 1.65;
+        }
+
+        .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+        .btn-primary {
+            padding: 15px 36px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), #d98a55);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 6px 20px rgba(201,106,59,0.3);
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,106,59,0.4); }
+
+        .btn-secondary {
+            padding: 15px 36px;
+            border-radius: 12px;
+            border: 1.5px solid var(--line);
+            background: var(--card);
+            color: var(--ink);
+            font-size: 15px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        .hero-trust {
+            display: flex;
+            justify-content: center;
+            gap: 36px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+        }
+
+        .hero-trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hero-trust-item svg { width: 15px; height: 15px; fill: var(--green); flex-shrink: 0; }
+
+        /* ── SEGMENT DIVIDERS ── */
+        .segment-divider {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 12px 48px;
+        }
+
+        .segment-divider .divider-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--line), transparent);
+        }
+
+        /* ── SECTION HEADER FONTS ── */
+        .hero h1 { font-family: var(--font-hero); }
+        .problem-left h2 { font-family: var(--font-section-a); }
+        .section-how .section-header h2 { font-family: var(--font-section-b); font-weight: 800; letter-spacing: -0.5px; }
+        .section-features .section-header h2 { font-family: var(--font-section-c); font-weight: 700; }
+        .tech-inner .section-header h2 { font-family: var(--font-section-d); color: #fff; font-style: italic; }
+        .section-numbers .section-header h2 { font-family: var(--font-section-e); font-weight: 700; letter-spacing: -0.3px; }
+        .story-inner h2 { font-family: var(--font-section-a); font-style: italic; }
+        .section-faq .section-header h2 { font-family: var(--font-section-b); font-weight: 600; }
+        .cta-box h2 { font-family: var(--font-section-c); font-weight: 800; letter-spacing: -0.5px; }
+
+        /* ── PROBLEM ── */
+        .section { position: relative; z-index: 1; }
+
+        .problem {
+            padding: 90px 48px;
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .problem-left h2 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .problem-left h2 span { color: var(--accent); }
+
+        .problem-left p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 32px;
+            margin-top: 28px;
+        }
+
+        .stat-block { flex: 1; }
+
+        .stat-num {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+        .problem-right {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 16px 48px rgba(97,66,40,0.08);
+        }
+
+        .scenario-card {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .scenario-card:last-child { border-bottom: none; }
+
+        .scenario-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .si-red { background: rgba(179,64,46,0.08); color: var(--red); }
+        .si-orange { background: rgba(201,106,59,0.08); color: var(--accent); }
+        .si-green { background: rgba(47,125,109,0.08); color: var(--green); }
+
+        .scenario-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .scenario-card p { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+        /* ── HOW IT WORKS ── */
+        .how-it-works {
+            padding: 90px 48px;
+            background: linear-gradient(180deg, rgba(201,106,59,0.03), transparent);
+        }
+
+        .how-inner {
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 52px;
+        }
+
+        .section-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .section-header p { font-size: 15px; color: var(--muted); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 32px 20px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            transition: all 0.25s;
+            position: relative;
+        }
+
+        .step-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(97,66,40,0.08); }
+
+        .step-num {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #d98a55);
+            color: #fff;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+        }
+
+        .step-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+        .step-card p { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+        /* ── FEATURES ── */
+        .features {
+            padding: 90px 48px;
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 30px 26px;
+            transition: all 0.25s;
+        }
+
+        .feature-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(97,66,40,0.10); }
+
+        .feature-card.wide { grid-column: span 2; }
+
+        .feature-icon {
+            width: 46px; height: 46px;
+            border-radius: 13px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 18px;
+        }
+
+        .fi-orange { background: rgba(201,106,59,0.10); color: var(--accent); }
+        .fi-green { background: rgba(47,125,109,0.10); color: var(--green); }
+        .fi-blue { background: rgba(9,132,227,0.10); color: var(--blue); }
+        .fi-red { background: rgba(179,64,46,0.10); color: var(--red); }
+
+        .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+        /* ── TECH SECTION ── */
+        .tech-section {
+            padding: 90px 48px;
+            background: var(--ink);
+            color: #fff;
+        }
+
+        .tech-inner {
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .tech-inner .section-header h2 { color: #fff; }
+        .tech-inner .section-header p { color: rgba(255,255,255,0.45); }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .tech-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 30px 28px;
+            transition: all 0.25s;
+        }
+
+        .tech-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+
+        .tech-card-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .tci-orange { background: rgba(201,106,59,0.15); color: #e0915f; }
+        .tci-cyan { background: rgba(0,206,201,0.12); color: #00cec9; }
+        .tci-green { background: rgba(46,204,154,0.12); color: #2ecc9a; }
+        .tci-blue { background: rgba(9,132,227,0.12); color: #74b9ff; }
+
+        .tech-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+        .tech-card p { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+
+        .tech-card .tech-tag {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .tag-orange { background: rgba(201,106,59,0.15); color: #e0915f; }
+        .tag-cyan { background: rgba(0,206,201,0.12); color: #00cec9; }
+        .tag-green { background: rgba(46,204,154,0.12); color: #2ecc9a; }
+        .tag-blue { background: rgba(9,132,227,0.12); color: #74b9ff; }
+
+        /* ── NUMBERS ── */
+        .numbers {
+            padding: 90px 48px;
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .number-card {
+            text-align: center;
+            padding: 36px 20px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+        }
+
+        .number-card .big {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .number-card .label { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+        /* ── STORY ── */
+        .story {
+            padding: 90px 48px;
+            background: linear-gradient(180deg, rgba(47,125,109,0.03), transparent);
+        }
+
+        .story-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .story-inner h2 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .story-quote {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 20px;
+            line-height: 1.65;
+            color: var(--ink);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .story-quote::before { content: '\201C'; color: var(--accent); font-size: 40px; line-height: 0; vertical-align: -12px; margin-right: 4px; }
+        .story-quote::after { content: '\201D'; color: var(--accent); font-size: 40px; line-height: 0; vertical-align: -12px; margin-left: 4px; }
+
+        .story-author {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .story-author span { color: var(--muted); font-weight: 400; }
+
+        /* ── FAQ ── */
+        .faq {
+            padding: 90px 48px;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--line);
+            padding: 24px 0;
+        }
+
+        .faq-item:first-child { border-top: 1px solid var(--line); }
+
+        .faq-q {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-q::after {
+            content: '+';
+            font-size: 20px;
+            color: var(--accent);
+            transition: transform 0.2s;
+        }
+
+        .faq-item.open .faq-q::after { transform: rotate(45deg); }
+
+        .faq-a {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.65;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.open .faq-a { max-height: 200px; padding-bottom: 4px; }
+
+        /* ── CTA ── */
+        .cta-section {
+            padding: 80px 48px;
+        }
+
+        .cta-box {
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, var(--ink), #1e1e30);
+            border-radius: 24px;
+            padding: 60px 48px;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            background: rgba(201,106,59,0.12);
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        .cta-box h2 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .cta-box p {
+            font-size: 15px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .cta-box .btn-primary { position: relative; font-size: 16px; padding: 16px 40px; }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid var(--line);
+            padding: 32px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--faint);
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        footer a { color: var(--muted); text-decoration: none; }
+        footer a:hover { color: var(--accent); }
+
+        .footer-links { display: flex; gap: 24px; }
+
+        /* ── DISPATCH SECTION ── */
+        .dispatch-section {
+            padding: 90px 48px;
+            background: linear-gradient(180deg, var(--bg), rgba(201,106,59,0.03));
+        }
+
+        .dispatch-inner {
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .dispatch-wrap {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+            height: 520px;
+        }
+
+        .dispatch-map {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            box-shadow: 0 12px 40px rgba(97,66,40,0.08);
+            position: relative;
+            background: var(--card);
+        }
+
+        .dispatch-map #dispatchMap { height: 100%; width: 100%; background: #f4ede4; }
+        .dispatch-map .leaflet-tile-pane { filter: saturate(0.85) brightness(1.05); }
+
+        .map-sensor-label {
+            background: rgba(247,241,233,0.92);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--ink);
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .sensor-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px rgba(47,125,109,0.3), 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .sensor-dot.alert {
+            background: var(--red);
+            box-shadow: 0 0 0 2px rgba(179,64,46,0.4), 0 0 12px rgba(179,64,46,0.3);
+            animation: pulse-alert 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-alert {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(179,64,46,0.4), 0 0 12px rgba(179,64,46,0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(179,64,46,0.15), 0 0 20px rgba(179,64,46,0.2); }
+        }
+
+        .hospital-icon-inner {
+            background: var(--card);
+            border: 2px solid var(--blue);
+            border-radius: 10px;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--blue);
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+
+        .hospital-icon-inner.selected {
+            border-color: var(--accent);
+            color: #fff;
+            background: var(--accent);
+        }
+
+        .dispatch-team-marker {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
+
+        .team-dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2.5px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.4s ease;
+        }
+
+        .team-dot.deployed {
+            background: var(--red);
+            animation: pulse-team 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-team {
+            0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 2px 16px rgba(179,64,46,0.4); }
+        }
+
+        .team-label-mini {
+            background: rgba(247,241,233,0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--ink);
+            white-space: nowrap;
+        }
+
+        /* Dispatch right panel */
+        .dispatch-panel {
+            display: flex; flex-direction: column; gap: 14px;
+            overflow-y: auto;
+        }
+
+        .dp-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 8px 28px rgba(97,66,40,0.06);
+        }
+
+        .dp-card h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .dp-card h3 .dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+
+        .dot-red { background: var(--red); }
+        .dot-green { background: var(--green); }
+        .dot-blue { background: var(--blue); }
+        .dot-orange { background: var(--accent); }
+
+        .hospital-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .hospital-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--line);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12.5px;
+            color: var(--ink);
+        }
+
+        .hospital-item:hover { border-color: var(--blue); background: rgba(9,132,227,0.04); }
+        .hospital-item.selected { border-color: var(--accent); background: rgba(201,106,59,0.06); }
+
+        .hospital-item .dist {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .hospital-item .hi-icon {
+            width: 26px; height: 26px;
+            border-radius: 7px;
+            background: rgba(9,132,227,0.08);
+            color: var(--blue);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; flex-shrink: 0;
+        }
+
+        /* Team cards */
+        .team-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .team-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--line);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12.5px;
+            color: var(--ink);
+        }
+
+        .team-item:hover { border-color: var(--accent); background: rgba(201,106,59,0.04); }
+        .team-item.selected { border-color: var(--accent); background: rgba(201,106,59,0.06); }
+
+        .team-item .t-icon {
+            width: 26px; height: 26px;
+            border-radius: 7px;
+            background: rgba(201,106,59,0.08);
+            color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; flex-shrink: 0;
+        }
+
+        .team-item .status {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-ready { color: var(--green); }
+        .status-deployed { color: var(--red); }
+
+        /* Alert button */
+        .dp-alert-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--red), #d4432e);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 14px rgba(179,64,46,0.3);
+        }
+
+        .dp-alert-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(179,64,46,0.4); }
+        .dp-alert-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .dp-deploy-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), #d98a55);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 14px rgba(201,106,59,0.25);
+        }
+
+        .dp-deploy-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(201,106,59,0.35); }
+        .dp-deploy-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Transport progress */
+        .transport-progress {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .transport-progress.active { display: block; }
+
+        .tp-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .tp-phase {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .tp-eta {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .tp-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--line);
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .tp-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .tp-detail {
+            font-size: 11.5px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* Live feed */
+        .live-feed {
+            max-height: 90px;
+            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+
+        .feed-msg {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.4;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(236,223,208,0.5);
+        }
+
+        .feed-msg:last-child { border-bottom: none; }
+        .feed-msg .time { color: var(--faint); margin-right: 6px; font-family: monospace; font-size: 10px; }
+        .feed-msg .team-label { color: var(--accent); font-weight: 700; margin-right: 4px; }
+
+        .dp-status-bar {
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+
+        .dp-status-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 11px; color: var(--muted);
+        }
+
+        .dp-status-item .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+        }
+
+        /* Dispatch section header font */
+        .section-dispatch .section-header h2 { font-family: var(--font-section-e); font-weight: 700; letter-spacing: -0.3px; }
+
+        /* Dispatch nav link */
+        .nav-links a.dispatch-link {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+            .dispatch-wrap {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .dispatch-map { height: 350px; }
+            .dispatch-panel { max-height: 400px; }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 34px; }
+            .problem-grid, .tech-grid { grid-template-columns: 1fr; }
+            .steps-grid, .feature-grid, .numbers-grid { grid-template-columns: 1fr; }
+            .feature-card.wide { grid-column: span 1; }
+            .stat-row { flex-direction: column; gap: 16px; }
+            nav { padding: 0 20px; }
+            .hero, .problem, .features, .numbers, .story, .faq, .cta-section, .dispatch-section { padding-left: 20px; padding-right: 20px; }
+            footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <div class="glow g3"></div>
+
+    <nav>
+        <div class="nav-brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
+            <div class="brand-name">Eldercare</div>
+        </div>
+        <div class="nav-links">
+            <a href="#problem">The Problem</a>
+            <a href="#how">How It Works</a>
+            <a href="#features">Features</a>
+            <a href="#dispatch">Dispatch</a>
+            <a href="#faq">FAQ</a>
+            <a href="login.html" class="nav-cta">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- ═══════ HERO ═══════ -->
+    <section class="hero">
+        <div class="hero-badge">AI-Powered Elderly Safety</div>
+        <h1>Your parents deserve <span>safety</span> that never <span>sleeps</span></h1>
+        <p class="hero-sub">Invisible 24GHz radar sensors watch over your parents around the clock. When a fall happens, our AI detects it in under 3 seconds and sends alerts to you and emergency responders — automatically.</p>
+        <div class="hero-btns">
+            <button class="btn-primary" onclick="window.location.href='login.html'">Create Free Account</button>
+            <button class="btn-secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See How It Works</button>
+        </div>
+        <div class="hero-trust">
+            <div class="hero-trust-item">
+                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15l-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 6z"/></svg>
+                No cameras — 100% privacy
+            </div>
+            <div class="hero-trust-item">
+                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15l-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 6z"/></svg>
+                All data stored on-device
+            </div>
+            <div class="hero-trust-item">
+                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15l-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 6z"/></svg>
+                Free for families
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: PROBLEM ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ THE PROBLEM ═══════ -->
+    <section class="section problem" id="problem">
+        <div class="problem-grid">
+            <div class="problem-left">
+                <h2>Every <span>11 seconds</span>, an elderly person is hospitalized from a <span>fall</span></h2>
+                <p>In India alone, over 68 million seniors live independently or with limited supervision. Falls are the leading cause of injury-related death among those over 65 — and most go unnoticed for critical minutes or even hours.</p>
+                <p>Adult children living in other cities carry the constant worry: <em>"What if something happens and no one is there?"</em> Existing solutions are either invasive (cameras), easily forgotten (wearables), or simply too expensive.</p>
+                <div class="stat-row">
+                    <div class="stat-block">
+                        <div class="stat-num">68M+</div>
+                        <div class="stat-label">Elderly living alone in India</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-num">47%</div>
+                        <div class="stat-label">Of falls go undetected for 30+ min</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-num">3x</div>
+                        <div class="stat-label">Survival rate with rapid response</div>
+                    </div>
+                </div>
+            </div>
+            <div class="problem-right">
+                <div class="scenario-card">
+                    <div class="scenario-icon si-red">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                    </div>
+                    <div>
+                        <h4>The Silent Fall Crisis</h4>
+                        <p>A senior slips in the bathroom at 2 AM. Without monitoring, no one knows until a family member calls hours later. By then, hypothermia and complications set in.</p>
+                    </div>
+                </div>
+                <div class="scenario-card">
+                    <div class="scenario-icon si-orange">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
+                    <div>
+                        <h4>Wearables Get Forgotten</h4>
+                        <p>Most elderly people stop wearing panic buttons and smartwatches within weeks. They're uncomfortable, need charging, and carry social stigma at home.</p>
+                    </div>
+                </div>
+                <div class="scenario-card">
+                    <div class="scenario-icon si-green">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                    <div>
+                        <h4>Our Solution: Invisible Protection</h4>
+                        <p>Radar sensors mounted on walls are invisible and require zero effort from your parents. They work through walls, in the dark, and never need charging.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: HOW IT WORKS ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ HOW IT WORKS ═══════ -->
+    <section class="section how-it-works section-how" id="how">
+        <div class="how-inner">
+            <div class="section-header">
+                <h2>How Eldercare Works</h2>
+                <p>From unboxing to 24/7 protection in under 10 minutes. No technicians, no wiring, no monthly fees.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h3>Create Account</h3>
+                    <p>Sign up as a family caregiver. Add your parent's name, health conditions, and emergency contacts in a simple form.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h3>Upload Floor Plan</h3>
+                    <p>Take a photo of your parent's home layout — even a hand-drawn sketch works. Our AI uses it to understand the space.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h3>AI Places Sensors</h3>
+                    <p>Our spatial analysis engine scans the floor plan, identifies high-risk fall zones (bathrooms, staircases), and recommends exact sensor placements.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">4</div>
+                    <h3>Monitor & Protect</h3>
+                    <p>Mount the 24GHz mmWave sensors on walls. They instantly begin monitoring. Falls, intrusions, and anomalies are detected and alerted in real-time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: FEATURES ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ FEATURES ═══════ -->
+    <section class="section features section-features" id="features">
+        <div class="section-header">
+            <h2>Built for Families Who Care</h2>
+            <p>Every feature is designed to give you peace of mind while respecting your parents' independence and dignity.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card wide">
+                <div class="feature-icon fi-red">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                </div>
+                <h3>Instant Fall Detection</h3>
+                <p>Our 24GHz mmWave radar sensors detect falls with 94% confidence in under 3 seconds. The technology works through walls, in complete darkness, and through smoke — unlike cameras or infrared sensors. When a fall is detected, the system immediately begins the emergency response chain.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-green">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                </div>
+                <h3>Emergency Response Chain</h3>
+                <p>Alerts cascade to family members, neighbours, and healthcare teams simultaneously. Track ambulance deployment, hospital ETA, and team location in real-time on a live map.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-blue">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <h3>Family Dashboard</h3>
+                <p>A real-time command centre showing sensor status, room activity, emergency contacts, and OTP-secured smart lock controls — all from your phone or laptop, anywhere in the world.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-orange">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <h3>AI Spatial Analysis</h3>
+                <p>Upload any floor plan — photo, sketch, or blueprint — and our AI identifies fall-risk zones, optimal sensor positions, and coverage gaps. It learns from thousands of elderly home layouts.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-green">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                </div>
+                <h3>Smart Lock OTP</h3>
+                <p>Rotating one-time passwords for door access. Caregivers, nurses, and emergency responders get time-limited codes — no spare keys needed, no security risk.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-blue">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/></svg>
+                </div>
+                <h3>Multi-Channel Alerts</h3>
+                <p>Push notifications, SMS fallback, and automated voice calls ensure alerts reach someone — even if the family member's phone is on silent or out of battery.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: TECHNOLOGY ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ TECHNOLOGY ═══════ -->
+    <section class="section tech-section" id="tech">
+        <div class="tech-inner">
+            <div class="section-header">
+                <h2>The Technology Inside</h2>
+                <p>Military-grade sensing meets consumer-grade simplicity. Here's what makes Eldercare different.</p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-card-icon tci-orange">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                    </div>
+                    <h3>24GHz FMCW mmWave Radar</h3>
+                    <p>Frequency-modulated continuous wave radar operates at 24GHz — the same technology used in automotive collision avoidance. It detects micro-movements as subtle as breathing, and instantly distinguishes a fall from normal activity.</p>
+                    <span class="tech-tag tag-orange">Hardware</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-card-icon tci-cyan">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1-2.73 2.71-2.73 7.08 0 9.79s7.15 2.71 9.88 0C18.32 15.65 19 14.08 19 12.1h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58s9.14-3.49 12.65 0L21 3v7.12z"/></svg>
+                    </div>
+                    <h3>AI Spatial Analysis Engine</h3>
+                    <p>Our custom ML model analyzes floor plans to identify high-risk zones — bathrooms, staircases, kitchen areas — and recommends sensor placements that maximize coverage while minimizing hardware costs.</p>
+                    <span class="tech-tag tag-cyan">Machine Learning</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-card-icon tci-green">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    </div>
+                    <h3>On-Device Password Hashing</h3>
+                    <p>All credentials are hashed with scrypt on your local device before storage. No passwords ever leave your computer. Session tokens use 256-bit cryptographic randomness.</p>
+                    <span class="tech-tag tag-green">Security</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-card-icon tci-blue">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+                    </div>
+                    <h3>Real-Time Transport Tracking</h3>
+                    <p>When an emergency is confirmed, healthcare teams are deployed with live GPS tracking. Families watch the ambulance route, ETA updates, and hospital handoff — all in real-time on the dashboard.</p>
+                    <span class="tech-tag tag-blue">Live Tracking</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: NUMBERS ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ NUMBERS ═══════ -->
+    <section class="section numbers section-numbers" id="numbers">
+        <div class="section-header">
+            <h2>By the Numbers</h2>
+            <p>Real impact, measured and verified.</p>
+        </div>
+        <div class="numbers-grid">
+            <div class="number-card">
+                <div class="big">&lt;3s</div>
+                <div class="label">Average fall detection time from incident to alert</div>
+            </div>
+            <div class="number-card">
+                <div class="big">24/7</div>
+                <div class="label">Continuous monitoring with zero blind spots</div>
+            </div>
+            <div class="number-card">
+                <div class="big">0</div>
+                <div class="label">Cameras, wearables, or monthly subscription fees</div>
+            </div>
+            <div class="number-card">
+                <div class="big">94%</div>
+                <div class="label">Fall detection accuracy with mmWave radar</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: STORY ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ STORY ═══════ -->
+    <section class="section story">
+        <div class="story-inner">
+            <h2>Why We Built This</h2>
+            <p class="story-quote">My grandmother fell in her bathroom at midnight and lay there for four hours before anyone found her. That night changed everything for our family. We built Eldercare so no family should ever go through that again — so that the people who raised us are never alone when they need help the most.</p>
+            <p class="story-author">The Eldercare Team <span>&middot; Young Founders Cup 2026</span></p>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: DISPATCH ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ ACTIVE EMERGENCY DISPATCH ═══════ -->
+    <section class="section dispatch-section section-dispatch" id="dispatch">
+        <div class="dispatch-inner">
+            <div class="section-header">
+                <h2>Active Emergency Dispatch</h2>
+                <p>When a fall is detected, Eldercare instantly locates the nearest hospitals and deploys the fastest available team — all tracked live on a map.</p>
+            </div>
+
+            <div class="dispatch-wrap">
+                <div class="dispatch-map">
+                    <div id="dispatchMap"></div>
+                </div>
+
+                <div class="dispatch-panel">
+                    <!-- Status -->
+                    <div class="dp-card">
+                        <h3><span class="dot dot-green"></span> System Status</h3>
+                        <div class="dp-status-bar">
+                            <div class="dp-status-item"><span class="dot dot-green"></span> 4 Sensors Online</div>
+                            <div class="dp-status-item"><span class="dot dot-blue"></span> 3 Hospitals</div>
+                            <div class="dp-status-item"><span class="dot dot-orange"></span> 3 Teams</div>
+                        </div>
+                    </div>
+
+                    <!-- Trigger Alert -->
+                    <div class="dp-card">
+                        <button class="dp-alert-btn" id="dAlertBtn">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                            SIMULATE FALL ALERT
+                        </button>
+                    </div>
+
+                    <!-- Hospitals -->
+                    <div class="dp-card">
+                        <h3><span class="dot dot-blue"></span> Nearby Hospitals</h3>
+                        <div class="hospital-list" id="dHospitalList"></div>
+                    </div>
+
+                    <!-- Teams -->
+                    <div class="dp-card">
+                        <h3><span class="dot dot-orange"></span> Response Teams</h3>
+                        <div class="team-list" id="dTeamList"></div>
+                        <button class="dp-deploy-btn" id="dDeployBtn" disabled style="margin-top: 10px;">Deploy Selected Team</button>
+
+                        <div class="transport-progress" id="dTransport">
+                            <div class="tp-header">
+                                <span class="tp-phase" id="dTpPhase">Dispatching...</span>
+                                <span class="tp-eta" id="dTpEta">ETA: --</span>
+                            </div>
+                            <div class="tp-bar"><div class="tp-fill" id="dTpFill"></div></div>
+                            <div class="tp-detail" id="dTpDetail">Waiting for deployment...</div>
+                        </div>
+                    </div>
+
+                    <!-- Live Feed -->
+                    <div class="dp-card">
+                        <h3><span class="dot dot-green"></span> Live Feed</h3>
+                        <div class="live-feed" id="dLiveFeed"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: FAQ ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ FAQ ═══════ -->
+    <section class="section faq section-faq" id="faq">
+        <div class="section-header">
+            <h2>Frequently Asked Questions</h2>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q">How does fall detection work without cameras?</div>
+            <div class="faq-a">Eldercare uses 24GHz FMCW mmWave radar — the same technology in self-driving cars. It sends invisible radio waves that bounce off objects and people. The AI analyzes the reflected signals to detect sudden changes in movement patterns that indicate a fall. It works through walls, in total darkness, and doesn't capture any visual images — preserving complete privacy.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q">Does my parent need to wear anything?</div>
+            <div class="faq-a">No. The radar sensors are mounted on walls and are completely invisible. Your parent doesn't need to wear any device, press any button, or change any habit. The system works passively in the background — true set-and-forget protection.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q">Is my family's data safe?</div>
+            <div class="faq-a">All data — including passwords, session tokens, health information, and floor plans — is stored locally on your device in encrypted JSON files. Passwords are hashed with scrypt before storage. Nothing is sent to external servers. You have complete ownership and control of your data.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q">What happens when a fall is detected?</div>
+            <div class="faq-a">The system triggers a multi-step emergency response: (1) Family caregivers receive push notifications immediately, (2) SMS and automated voice calls ensure reachability, (3) You can confirm or dismiss the alert from the dashboard, (4) If confirmed, healthcare teams are deployed with live GPS tracking to the patient's location.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q">How is the floor plan analysis done?</div>
+            <div class="faq-a">Upload a photo, sketch, or digital floor plan of your parent's home. Our AI spatial analysis engine scans the layout, identifies high-risk fall zones (bathrooms, staircases, kitchen), and recommends optimal positions for up to 12 radar sensors. The analysis takes under 10 seconds and includes confidence scores for each placement.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q">What does "Family Gateway" mean?</div>
+            <div class="faq-a">Family Gateway is the caregiver-facing dashboard of Eldercare. It's your single command centre — view sensor status, monitor room activity, manage emergency contacts, control smart lock OTPs, track deployed healthcare teams, and receive alerts. It works on any browser, from anywhere in the world.</div>
+        </div>
+    </section>
+
+    <!-- ═══════ DIVIDER: CTA ═══════ -->
+    <div class="segment-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══════ CTA ═══════ -->
+    <section class="cta-section">
+        <div class="cta-box">
+            <h2>Protect the people who raised you</h2>
+            <p>Create a free account in 2 minutes. Set up home monitoring in under 10. No credit card, no subscription, no technician visit required.</p>
+            <button class="btn-primary" onclick="window.location.href='login.html'">Get Started — It's Free</button>
+        </div>
+    </section>
+
+    <!-- ═══════ FOOTER ═══════ -->
+    <footer>
+        <span>&copy; 2026 Eldercare &middot; Young Founders Cup 2026 &middot; All data stored locally on-device</span>
+        <div class="footer-links">
+            <a href="#features">Features</a>
+            <a href="#tech">Technology</a>
+            <a href="#faq">FAQ</a>
+            <a href="login.html">Sign In</a>
+        </div>
+    </footer>
+
+    <script>
+        /* ── FAQ toggle ── */
+        document.querySelectorAll('.faq-q').forEach(q => {
+            q.addEventListener('click', () => {
+                const item = q.parentElement;
+                const wasOpen = item.classList.contains('open');
+                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+                if (!wasOpen) item.classList.add('open');
+            });
+        });
+
+        /* ── DISPATCH MAP ── */
+        (function() {
+            const CENTER = [12.9716, 77.5946];
+            let selectedHospital = null;
+            let selectedTeam = null;
+            let alertActive = false;
+            let teamMarker = null;
+            let animFrame = null;
+
+            const sensors = [
+                { id: 'S1', name: 'Living Room', lat: CENTER[0] + 0.0025, lng: CENTER[1] + 0.0018, area: 'Living Room' },
+                { id: 'S2', name: 'Bathroom',   lat: CENTER[0] - 0.0012, lng: CENTER[1] + 0.0030, area: 'Bathroom' },
+                { id: 'S3', name: 'Bedroom',    lat: CENTER[0] + 0.0035, lng: CENTER[1] - 0.0010, area: 'Bedroom' },
+                { id: 'S4', name: 'Kitchen',    lat: CENTER[0] - 0.0020, lng: CENTER[1] - 0.0015, area: 'Kitchen' }
+            ];
+
+            const hospitals = [
+                { id: 'H1', name: 'City General Hospital',     lat: CENTER[0] + 0.008,  lng: CENTER[1] + 0.006, dist: 2.1 },
+                { id: 'H2', name: 'St. Mary\'s Medical Centre', lat: CENTER[0] - 0.005,  lng: CENTER[1] + 0.012, dist: 3.4 },
+                { id: 'H3', name: 'Lakeside Care Hospital',    lat: CENTER[0] + 0.011,  lng: CENTER[1] - 0.008, dist: 4.7 }
+            ];
+
+            const teams = [
+                { id: 'T1', name: 'Alpha Response',   lat: CENTER[0] + 0.004, lng: CENTER[1] + 0.003, status: 'ready', deployed: false, phase: null },
+                { id: 'T2', name: 'Bravo Medic Unit',  lat: CENTER[0] - 0.003, lng: CENTER[1] - 0.002, status: 'ready', deployed: false, phase: null },
+                { id: 'T3', name: 'Charlie First Aid', lat: CENTER[0] + 0.001, lng: CENTER[1] - 0.004, status: 'ready', deployed: false, phase: null }
+            ];
+
+            const sensorMarkers = {};
+            const hospitalMarkers = {};
+            const teamMarkers = {};
+
+            const map = L.map('dispatchMap', {
+                center: CENTER,
+                zoom: 15,
+                zoomControl: false,
+                attributionControl: false,
+                dragging: true,
+                scrollWheelZoom: false
+            });
+
+            L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            sensors.forEach(s => {
+                const marker = L.marker([s.lat, s.lng], {
+                    icon: L.divIcon({ className: '', html: '<div class="sensor-dot"></div>', iconSize: [10, 10], iconAnchor: [5, 5] })
+                }).addTo(map);
+
+                marker.bindTooltip(`<div class="map-sensor-label">Sensor — ${s.name}</div>`, {
+                    permanent: false, direction: 'top', offset: [0, -8], className: ''
+                });
+
+                sensorMarkers[s.id] = marker;
+            });
+
+            hospitals.forEach(h => {
+                const marker = L.marker([h.lat, h.lng], {
+                    icon: L.divIcon({ className: '', html: '<div class="hospital-icon-inner" id="hIcon_' + h.id + '">H</div>', iconSize: [28, 28], iconAnchor: [14, 14] })
+                }).addTo(map);
+
+                marker.bindTooltip(`<div class="map-sensor-label">${h.name}<br><span style="color:#97826f">${h.dist} km away</span></div>`, {
+                    permanent: false, direction: 'top', offset: [0, -16], className: ''
+                });
+
+                hospitalMarkers[h.id] = marker;
+            });
+
+            teams.forEach(t => {
+                const marker = L.marker([t.lat, t.lng], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: `<div class="dispatch-team-marker"><div class="team-dot" id="tDot_${t.id}"></div><div class="team-label-mini">${t.name.split(' ')[0]}</div></div>`,
+                        iconSize: [40, 30], iconAnchor: [20, 15]
+                    })
+                }).addTo(map);
+
+                teamMarkers[t.id] = marker;
+            });
+
+            /* ── Render lists ── */
+            function renderHospitals() {
+                const el = document.getElementById('dHospitalList');
+                el.innerHTML = hospitals.map(h => `
+                    <div class="hospital-item ${selectedHospital === h.id ? 'selected' : ''}" data-id="${h.id}">
+                        <div class="hi-icon">H</div>
+                        <span>${h.name}</span>
+                        <span class="dist">${h.dist} km</span>
+                    </div>
+                `).join('');
+
+                el.querySelectorAll('.hospital-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (alertActive) return;
+                        selectedHospital = item.dataset.id;
+                        hospitals.forEach(h => {
+                            const icon = document.getElementById('hIcon_' + h.id);
+                            if (icon) icon.classList.toggle('selected', h.id === selectedHospital);
+                        });
+                        renderHospitals();
+                        updateDeployBtn();
+                    });
+                });
+            }
+
+            function renderTeams() {
+                const el = document.getElementById('dTeamList');
+                el.innerHTML = teams.map(t => `
+                    <div class="team-item ${selectedTeam === t.id ? 'selected' : ''}" data-id="${t.id}">
+                        <div class="t-icon">${t.name[0]}</div>
+                        <span>${t.name}</span>
+                        <span class="status ${t.deployed ? 'status-deployed' : 'status-ready'}">${t.deployed ? 'Deployed' : 'Ready'}</span>
+                    </div>
+                `).join('');
+
+                el.querySelectorAll('.team-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const t = teams.find(x => x.id === item.dataset.id);
+                        if (t && !t.deployed) {
+                            selectedTeam = item.dataset.id;
+                            renderTeams();
+                            updateDeployBtn();
+                        }
+                    });
+                });
+            }
+
+            function updateDeployBtn() {
+                document.getElementById('dDeployBtn').disabled = !(selectedHospital && selectedTeam && alertActive);
+            }
+
+            function addFeed(teamName, msg) {
+                const feed = document.getElementById('dLiveFeed');
+                if (!feed) return;
+                const now = new Date();
+                const time = now.toTimeString().slice(0, 8);
+                const div = document.createElement('div');
+                div.className = 'feed-msg';
+                div.innerHTML = `<span class="time">${time}</span><span class="team-label">${teamName}</span> ${msg}`;
+                feed.appendChild(div);
+                feed.scrollTop = feed.scrollHeight;
+            }
+
+            function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+            /* ── Trigger Alert ── */
+            document.getElementById('dAlertBtn').addEventListener('click', () => {
+                if (alertActive) return;
+                alertActive = true;
+                selectedHospital = null;
+                selectedTeam = null;
+
+                const m = sensorMarkers['S1'];
+                if (m) m.setIcon(L.divIcon({ className: '', html: '<div class="sensor-dot alert"></div>', iconSize: [10, 10], iconAnchor: [5, 5] }));
+
+                document.getElementById('dAlertBtn').disabled = true;
+                document.getElementById('dAlertBtn').textContent = '⚠ FALL DETECTED — SELECT HOSPITAL & TEAM';
+                addFeed('System', 'Fall detected at Living Room sensor. Awaiting moderator response.');
+                renderHospitals();
+                renderTeams();
+                updateDeployBtn();
+            });
+
+            /* ── Deploy ── */
+            document.getElementById('dDeployBtn').addEventListener('click', () => {
+                if (!selectedHospital || !selectedTeam) return;
+
+                const team = teams.find(t => t.id === selectedTeam);
+                const hospital = hospitals.find(h => h.id === selectedHospital);
+                if (!team || !hospital) return;
+
+                team.deployed = true;
+                team.phase = 'to_patient';
+                document.getElementById('dDeployBtn').disabled = true;
+
+                const tDot = document.getElementById('tDot_' + team.id);
+                if (tDot) tDot.classList.add('deployed');
+                renderTeams();
+
+                const tp = document.getElementById('dTransport');
+                tp.classList.add('active');
+                document.getElementById('dTpPhase').textContent = `En route to patient`;
+                document.getElementById('dTpDetail').textContent = `${team.name} dispatched to Living Room. Heading to patient location.`;
+                document.getElementById('dTpFill').style.width = '0%';
+                addFeed(team.name, 'Deployed! En route to patient at Living Room.');
+
+                const distToPatient = 0.8 + Math.random() * 0.6;
+                const etaPatient = Math.ceil(distToPatient * 2);
+                const distToHospital = hospital.dist;
+                const etaHospital = Math.ceil(distToHospital * 2.5);
+                const totalEta = etaPatient + etaHospital;
+
+                let step = 0;
+                const total = Math.round((etaPatient * 60000) / 500);
+
+                const iv = setInterval(() => {
+                    step++;
+                    const prog = (step / total) * 45;
+                    document.getElementById('dTpFill').style.width = Math.min(45, prog) + '%';
+                    document.getElementById('dTpEta').textContent = `ETA: ${Math.max(1, Math.ceil(totalEta * (1 - step / total)))} min`;
+                }, 500);
+
+                animateAlongRoute(team, team.lat, team.lng, sensorMarkers['S1'].getLatLng().lat, sensorMarkers['S1'].getLatLng().lng, etaPatient * 60000, () => {
+                    clearInterval(iv);
+                    document.getElementById('dTpFill').style.width = '45%';
+                    team.phase = 'at_patient';
+                    document.getElementById('dTpPhase').textContent = 'Team arrived at patient';
+                    document.getElementById('dTpDetail').textContent = `${team.name} has arrived at Living Room. Patient assessment in progress.`;
+                    addFeed(team.name, pickRandom(['Patient located. Beginning assessment.', 'On scene. Patient responsive. Preparing for transport.']))
+
+                    setTimeout(() => {
+                        team.phase = 'to_hospital';
+                        document.getElementById('dTpPhase').textContent = `Transporting to ${hospital.name}`;
+                        document.getElementById('dTpDetail').textContent = `Patient loaded. Heading to ${hospital.name}. ${distToHospital.toFixed(1)} km, ~${etaHospital} min.`;
+                        addFeed(team.name, `Transporting patient to ${hospital.name}. ETA ${etaHospital} min, ${distToHospital.toFixed(1)} km.`);
+
+                        let hStep = 0;
+                        const hTotal = Math.round((etaHospital * 60000) / 500);
+
+                        const hIv = setInterval(() => {
+                            hStep++;
+                            const prog = 45 + (hStep / hTotal) * 55;
+                            document.getElementById('dTpFill').style.width = Math.min(100, prog) + '%';
+                            document.getElementById('dTpEta').textContent = `ETA: ${Math.max(0, Math.ceil(etaHospital * (1 - hStep / hTotal)))} min`;
+                            if (hStep / hTotal > 0.3 && team.phase === 'to_hospital') {
+                                team.phase = 'arriving';
+                                document.getElementById('dTpPhase').textContent = `Approaching ${hospital.name}`;
+                                document.getElementById('dTpDetail').textContent = `Almost at ${hospital.name}. ER team notified.`;
+                                addFeed(team.name, `Approaching ${hospital.name}. ER notified.`);
+                            }
+                        }, 500);
+
+                        animateAlongRoute(team, team.lat, team.lng, hospital.lat, hospital.lng, etaHospital * 60000, () => {
+                            clearInterval(hIv);
+                            document.getElementById('dTpFill').style.width = '100%';
+                            team.phase = 'at_hospital';
+                            document.getElementById('dTpPhase').textContent = 'Transfer complete';
+                            document.getElementById('dTpDetail').textContent = `Patient successfully transferred to ${hospital.name}.`;
+                            document.getElementById('dTpEta').textContent = 'Mission complete';
+                            addFeed(team.name, `Patient transferred to ${hospital.name}. Mission complete.`);
+
+                            const sm = sensorMarkers['S1'];
+                            if (sm) sm.setIcon(L.divIcon({ className: '', html: '<div class="sensor-dot"></div>', iconSize: [10, 10], iconAnchor: [5, 5] }));
+                            alertActive = false;
+                            document.getElementById('dAlertBtn').disabled = false;
+                            document.getElementById('dAlertBtn').textContent = 'SIMULATE FALL ALERT';
+                            team.deployed = false;
+                            team.phase = null;
+                            if (tDot) tDot.classList.remove('deployed');
+                            renderTeams();
+                        });
+                    }, 2500);
+                });
+            });
+
+            function animateAlongRoute(team, fromLat, fromLng, toLat, toLng, durationMs, onDone) {
+                const start = performance.now();
+                const startLat = fromLat, startLng = fromLng;
+                const endLat = toLat, endLng = toLng;
+
+                function frame(now) {
+                    const t = Math.min(1, (now - start) / durationMs);
+                    const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                    const lat = startLat + (endLat - startLat) * eased;
+                    const lng = startLng + (endLng - startLng) * eased;
+                    team.lat = lat; team.lng = lng;
+
+                    const m = teamMarkers[team.id];
+                    if (m) m.setLatLng([lat, lng]);
+
+                    if (t < 1) {
+                        animFrame = requestAnimationFrame(frame);
+                    } else {
+                        if (onDone) onDone();
+                    }
+                }
+                animFrame = requestAnimationFrame(frame);
+            }
+
+            renderHospitals();
+            renderTeams();
+        })();
+    </script>
+</body>
+</html>
