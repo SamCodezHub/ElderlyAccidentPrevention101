@@ -331,6 +331,17 @@
         }
 
         .trust-item svg { width: 13px; height: 13px; fill: var(--green); }
+
+        /* ── Mobile / phone responsive overrides ── */
+        @media (max-width: 560px) {
+            .shell { padding: 18px 8px; }
+            .brand-row h1 { font-size: 17px; }
+            .tagline { font-size: 13px; }
+            .field-row { grid-template-columns: 1fr; gap: 12px; }
+            .card { padding: 18px 16px; }
+            input, .pw-wrap input { font-size: 15px; }
+            .tabs .tab { font-size: 13px; padding: 11px 0; }
+        }
     </style>
 </head>
 <body>

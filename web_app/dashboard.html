@@ -634,6 +634,44 @@
         .ld-team { background: #0984e3; box-shadow: 0 0 6px rgba(9,132,227,0.5); }
         .ld-team-active { background: #fdcb6e; box-shadow: 0 0 6px rgba(253,203,110,0.5); }
         .ld-hospital { background: #e17055; box-shadow: 0 0 6px rgba(225,112,85,0.5); }
+
+        /* ── Mobile / phone responsive overrides ── */
+        @media (max-width: 900px) {
+            .topbar { padding: 0 12px; }
+            .brand { font-size: 11px; }
+            .user-tag { display: none; }
+            .sidebar { width: 220px; }
+        }
+
+        @media (max-width: 620px) {
+            .main { position: relative; flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                flex: 1 0 auto;
+                max-height: 42%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+            }
+            .map-wrap { flex: 1 1 0; min-height: 0; }
+            .map-legend { display: none; }
+            .right-panel {
+                position: absolute;
+                left: 0; right: 0; bottom: 0; top: auto;
+                width: 100%; height: 0;
+                z-index: 30;
+                border-left: none;
+                border-top: 1px solid rgba(255,255,255,0.06);
+                box-shadow: 0 -12px 30px rgba(0,0,0,0.45);
+            }
+            .right-panel.open { height: min(72vh, 460px); width: 100%; }
+            .right-panel-inner { width: 100%; }
+        }
+
+        @media (max-width: 380px) {
+            .alert-btn { padding: 4px 10px; font-size: 11px; }
+            .logout { padding: 3px 10px; }
+            .sidebar-tab { font-size: 10px; }
+        }
     </style>
 </head>
 <body>

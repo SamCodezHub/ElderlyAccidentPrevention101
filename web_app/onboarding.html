@@ -419,6 +419,26 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .busy-text { font-size: 13px; color: var(--mut); }
+
+        /* ── Mobile / phone responsive overrides ── */
+        @media (max-width: 900px) {
+            .topbar { padding: 0 14px; }
+            .brand-name { display: none; }
+            .user-chip-name { display: none; }
+            .shell { padding: 24px 14px 32px; }
+        }
+
+        @media (max-width: 620px) {
+            h1 { font-size: 22px; }
+            .lede { font-size: 13px; }
+            .stepper { flex-wrap: wrap; gap: 6px 10px; }
+            .step-bar { display: none; }
+            .step-label { font-size: 10px; }
+            .photo-block { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .grid2, .grid3 { grid-template-columns: 1fr; }
+            .span2, .span3 { grid-column: span 1; }
+            .wizard-card { padding: 18px 14px; }
+        }
     </style>
 </head>
 <body>
