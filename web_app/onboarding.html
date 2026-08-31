@@ -484,6 +484,7 @@
                 <div class="panel-head">
                     <div class="panel-title">Who are we protecting?</div>
                     <div class="panel-sub">This profile powers alert routing and appears on your family dashboard.</div>
+                    <button type="button" class="btn btn-ghost btn-cyan" id="autofillBtn" style="margin-top:12px;">Quick-fill test details</button>
                 </div>
                 <div class="grid2">
                     <div class="field span2">
@@ -548,7 +549,7 @@
                     </div>
                     <div class="field">
                         <label>Emergency Contact Name *</label>
-                        <input type="text" id="f_ecName" placeholder="Rehan Khan">
+                        <input type="text" id="f_ecName" placeholder="Rishabh Sharma">
                     </div>
                     <div class="field">
                         <label>Emergency Contact Phone *</label>
@@ -1002,61 +1003,6 @@
             $('busyOverlay').className = 'busy-overlay';
         }
 
-        function prefill(profile) {
-            if (!profile) return;
-            const sn = profile.senior || {};
-            if (sn.name) $('f_name').value = sn.name;
-            if (sn.age) $('f_age').value = sn.age;
-            if (sn.gender) $('f_gender').value = sn.gender;
-            if (sn.language) $('f_language').value = sn.language;
-            (sn.conditions || []).forEach(c => {
-                const idx = CONDITION_OPTS.indexOf(c);
-                if (idx >= 0) $('chipsConditions').children[idx].classList.add('on');
-                draft.senior.conditions.push(c);
-            });
-            if (sn.mobility) {
-                draft.senior.mobility = sn.mobility;
-                const mIdx = MOBILITY_OPTS.indexOf(sn.mobility);
-                if (mIdx >= 0) $('chipsMobility').children[mIdx].classList.add('on');
-            }
-            if (sn.photo) {
-                draft.senior.photo = sn.photo;
-                const pv = $('photoPreview');
-                pv.innerHTML = '';
-                const im = document.createElement('img');
-                im.src = sn.photo;
-                pv.appendChild(im);
-            }
-            const ph = sn.physician || {};
-            if (ph.name) $('f_docName').value = ph.name;
-            if (ph.hospital) $('f_docHosp').value = ph.hospital;
-            if (ph.phone) $('f_docPhone').value = ph.phone;
-            const ec = (sn.emergencyContacts || [])[0] || {};
-            if (ec.name) { $('f_ecName').value = ec.name; }
-            if (ec.relation) $('f_ecRel').value = ec.relation;
-            if (ec.phone) $('f_ecPhone').value = ec.phone;
-            const rs = profile.residence || {};
-            if (rs.flat) $('r_flat').value = rs.flat;
-            if (rs.area) $('r_area').value = rs.area;
-            if (rs.city) $('r_city').value = rs.city;
-            if (rs.pincode) $('r_pin').value = rs.pincode;
-            if (rs.buildingType) $('r_type').value = rs.buildingType;
-            if (rs.floor) $('r_floor').value = rs.floor;
-            $('r_elevator').checked = !!rs.elevator;
-            if (rs.lockboxBrand) $('r_lockBrand').value = rs.lockboxBrand;
-            if (rs.lockboxLocation) $('r_lockLoc').value = rs.lockboxLocation;
-            const ob = profile.onboarding;
-            if (ob && ob.completed && ob.schematic && ob.schematic.dataUrl) {
-                setPlan(ob.schematic.name || 'Floor Plan', ob.schematic.dataUrl);
-                draft.sensors = ob.sensors || [];
-                analyzed = draft.sensors.length > 0;
-                renderZones(draft.sensors, false);
-                $('analysisSummary').innerHTML = '<b>Previous analysis loaded</b> — re-run anytime or finish to continue.';
-                $('analysisSummary').className = 'analysis-summary show';
-                showStep(3);
-            }
-        }
-
         $('photoBtn').addEventListener('click', () => $('photoInput').click());
         $('photoInput').addEventListener('change', e => handlePhotoFile(e.target.files[0]));
         buildChips('chipsConditions', CONDITION_OPTS, true, 'conditions');
@@ -1094,12 +1040,44 @@
 
         $('analyzeBtn').addEventListener('click', runAnalysis);
 
+        function autofillDemo() {
+            $('f_name').value = 'Rishi Sharma';
+            $('f_age').value = '74';
+            $('f_gender').value = 'Male';
+            $('f_language').value = 'Hindi';
+            draft.senior.conditions = ['Cardiac History', 'Arthritis'];
+            draft.senior.mobility = 'Walks with cane';
+            const condWrap = $('chipsConditions');
+            if (condWrap) condWrap.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', draft.senior.conditions.indexOf(c.textContent) >= 0));
+            const mobWrap = $('chipsMobility');
+            if (mobWrap) mobWrap.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.textContent === draft.senior.mobility));
+            $('f_docName').value = 'Dr. Meera Iyer';
+            $('f_docHosp').value = 'Manipal Hospital, Old Airport Road';
+            $('f_docPhone').value = '+91 80 2502 4444';
+            $('f_ecRel').value = 'Son — Primary Caregiver';
+            $('f_ecName').value = 'Rishabh Sharma';
+            $('f_ecPhone').value = '+91 98450 40240';
+            $('r_flat').value = 'Flat 402, Tower B';
+            $('r_area').value = 'Prestige Shantiniketan, Whitefield';
+            $('r_city').value = 'Bengaluru';
+            $('r_pin').value = '560066';
+            $('r_type').value = 'Apartment Complex';
+            $('r_floor').value = '4';
+            $('r_elevator').checked = true;
+            $('r_lockBrand').value = 'Yale Smart Lockbox';
+            $('r_lockLoc').value = 'Mounted on main door handle';
+            $('r_notes').value = '';
+            toast('Test details filled &mdash; press Next to continue.');
+        }
+
+        const autofillBtn = document.getElementById('autofillBtn');
+        if (autofillBtn) autofillBtn.addEventListener('click', autofillDemo);
+
         (async function boot() {
             try {
                 const s = await api.session();
                 if (!s) { window.location.href = 'index.html'; return; }
                 SESSION_USER = s.user;
-                prefill(s.profile);
             } catch (e) {
                 window.location.href = 'index.html';
                 return;
