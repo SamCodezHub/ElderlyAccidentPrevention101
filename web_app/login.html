@@ -360,95 +360,12 @@
         <p class="tagline">Sensing danger, delivering Haven. <strong>Stay close to the people you love — even from afar.</strong> Fall detection, entry alerts and room-level monitoring for your parents' home.</p>
 
         <div class="card">
-            <div class="tabs">
-                <button type="button" class="tab active" id="tabSignin">Sign In</button>
-                <button type="button" class="tab" id="tabSignup">Create Account</button>
-            </div>
-
-            <div id="msgSignin" class="msg"></div>
-
-            <form id="formSignin" class="form active" novalidate>
-                <div class="field">
-                    <label for="siIdentifier">Email / Mobile Number</label>
-                    <input type="text" id="siIdentifier" placeholder="you@example.com or +91 98XXX XXXXX" autocomplete="username">
-                </div>
-                <div class="field">
-                    <label for="siPassword">Password</label>
-                    <div class="pw-wrap">
-                        <input type="password" id="siPassword" placeholder="Your password" autocomplete="current-password">
-                        <button type="button" class="peek" data-target="siPassword" title="Show / hide password">&#128065;</button>
-                    </div>
-                </div>
-                <div class="remember-row">
-                    <label class="remember-label" for="siRemember">
-                        <span class="switch">
-                            <input type="checkbox" id="siRemember" checked>
-                            <span class="slider"></span>
-                        </span>
-                        <span>
-                            <span class="remember-text">Remember Me</span>
-                            <div class="remember-hint">Save credentials — stay signed in after restarts</div>
-                        </span>
-                    </label>
-                </div>
-                <button type="submit" class="submit" id="signinBtn">Enter Family Gateway</button>
-            </form>
-
-            <form id="formSignup" class="form" novalidate>
-                <div class="msg" id="msgSignup"></div>
-                <div class="field">
-                    <label for="suName">Your Full Name</label>
-                    <input type="text" id="suName" placeholder="e.g. Ananya Sharma" autocomplete="name">
-                </div>
-                <div class="field-row">
-                    <div class="field">
-                        <label for="suEmail">Email</label>
-                        <input type="email" id="suEmail" placeholder="you@example.com" autocomplete="email">
-                    </div>
-                    <div class="field">
-                        <label for="suPhone">Mobile Number</label>
-                        <input type="tel" id="suPhone" placeholder="+91 98XXX XXXXX" autocomplete="tel">
-                    </div>
-                </div>
-                <div class="field">
-                    <label for="suPassword">Password</label>
-                    <div class="pw-wrap">
-                        <input type="password" id="suPassword" placeholder="At least 6 characters" autocomplete="new-password">
-                    </div>
-                </div>
-                <div class="field-row">
-                    <div class="field">
-                        <label for="suSeniorName">Parent's Name</label>
-                        <input type="text" id="suSeniorName" placeholder="e.g. Mr. Rajesh Sharma">
-                    </div>
-                    <div class="field">
-                        <label for="suSeniorAddress">Home Address</label>
-                        <input type="text" id="suSeniorAddress" placeholder="Flat / Street, City">
-                    </div>
-                </div>
-                <div class="remember-row">
-                    <label class="remember-label" for="suRemember">
-                        <span class="switch">
-                            <input type="checkbox" id="suRemember" checked>
-                            <span class="slider"></span>
-                        </span>
-                        <span>
-                            <span class="remember-text">Remember Me</span>
-                            <div class="remember-hint">Save this account on the device</div>
-                        </span>
-                    </label>
-                </div>
-                <button type="submit" class="submit" id="signupBtn">Create Family Account</button>
-            </form>
-
-            <div class="divider">or</div>
-
             <div class="demo-box">
                 <div class="demo-title">
                     <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:var(--accent-dark);"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
                     Quick Demo Sign-In
                 </div>
-                <div class="demo-sub">Sign in as Rehan &mdash; Monitoring Flat 402, Bengaluru</div>
+                <div class="demo-sub">Continue as Rishabh &mdash; Flat 402, Bengaluru</div>
                 <button type="button" class="demo-btn" id="demoBtn">One-tap Demo Access</button>
             </div>
         </div>
@@ -456,11 +373,11 @@
         <div class="trust-foot">
             <div class="trust-item">
                 <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15l-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 6z"/></svg>
-                Passwords hashed (scrypt) on-device
+                One-tap demo access
             </div>
             <div class="trust-item">
                 <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                Sessions survive restarts
+                Onboarding guides your setup
             </div>
             <div class="trust-item">
                 <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
@@ -474,119 +391,10 @@
     <script>
         const api = window.electronAPI;
 
-        const tabSignin = document.getElementById('tabSignin');
-        const tabSignup = document.getElementById('tabSignup');
-        const formSignin = document.getElementById('formSignin');
-        const formSignup = document.getElementById('formSignup');
-        const msgSignin = document.getElementById('msgSignin');
-        const msgSignup = document.getElementById('msgSignup');
-
-        function showMsg(el, text, kind) {
-            el.textContent = text;
-            el.className = 'msg show ' + (kind || 'error');
-        }
-
-        function hideMsg(el) { el.className = 'msg'; }
-
-        function switchTab(which) {
-            const signin = which === 'signin';
-            tabSignin.classList.toggle('active', signin);
-            tabSignup.classList.toggle('active', !signin);
-            formSignin.classList.toggle('active', signin);
-            formSignup.classList.toggle('active', !signin);
-            hideMsg(msgSignin);
-            hideMsg(msgSignup);
-        }
-
-        tabSignin.addEventListener('click', () => switchTab('signin'));
-        tabSignup.addEventListener('click', () => switchTab('signup'));
-
-        document.querySelectorAll('.peek').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const input = document.getElementById(btn.dataset.target);
-                input.type = input.type === 'password' ? 'text' : 'password';
-            });
-        });
-
-        try {
-            const savedId = localStorage.getItem('eap_remember_id');
-            if (savedId) document.getElementById('siIdentifier').value = savedId;
-        } catch (e) {}
-
         function routeAfterAuth(result) {
             sessionStorage.setItem('currentUser', JSON.stringify(result.user));
-            if (result.user.role === 'moderator') {
-                window.location.href = 'dashboard.html';
-                return;
-            }
-            const ob = result.profile && result.profile.onboarding;
-            window.location.href = (!ob || !ob.completed) ? 'onboarding.html' : 'family-dashboard.html';
+            window.location.href = 'onboarding.html';
         }
-
-        function handleAuthResponse(result, msgEl) {
-            if (!result || !result.success) {
-                showMsg(msgEl, (result && result.message) || 'Something went wrong. Please try again.', 'error');
-                return false;
-            }
-            try {
-                if (result.session && result.session.remember) {
-                    localStorage.setItem('eap_remember_id', result.user.email || result.user.phone || '');
-                } else {
-                    localStorage.removeItem('eap_remember_id');
-                }
-            } catch (e) {}
-            routeAfterAuth(result);
-            return true;
-        }
-
-        formSignin.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMsg(msgSignin);
-            const identifier = document.getElementById('siIdentifier').value.trim();
-            const password = document.getElementById('siPassword').value;
-            const remember = document.getElementById('siRemember').checked;
-            if (!identifier || !password) {
-                showMsg(msgSignin, 'Please enter your email/mobile number and password.', 'error');
-                return;
-            }
-            const btn = document.getElementById('signinBtn');
-            btn.disabled = true;
-            btn.textContent = 'Checking credentials…';
-            try {
-                const result = await api.login({ identifier, password, remember });
-                handleAuthResponse(result, msgSignin);
-                if (result && result.success) return;
-            } catch (err) {
-                showMsg(msgSignin, 'Something went wrong. Please try again.', 'error');
-            }
-            btn.disabled = false;
-            btn.textContent = 'Enter Family Gateway';
-        });
-
-        formSignup.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMsg(msgSignup);
-            const payload = {
-                name: document.getElementById('suName').value.trim(),
-                email: document.getElementById('suEmail').value.trim(),
-                phone: document.getElementById('suPhone').value.trim(),
-                password: document.getElementById('suPassword').value,
-                seniorName: document.getElementById('suSeniorName').value.trim(),
-                seniorAddress: document.getElementById('suSeniorAddress').value.trim(),
-                remember: document.getElementById('suRemember').checked
-            };
-            const btn = document.getElementById('signupBtn');
-            btn.disabled = true;
-            btn.textContent = 'Creating account…';
-            try {
-                const result = await api.register(payload);
-                if (handleAuthResponse(result, msgSignup)) return;
-            } catch (err) {
-                showMsg(msgSignup, 'Something went wrong. Please try again.', 'error');
-            }
-            btn.disabled = false;
-            btn.textContent = 'Create Family Account';
-        });
 
         const demoBtn = document.getElementById('demoBtn');
         demoBtn.addEventListener('click', async () => {
@@ -595,16 +403,17 @@
             try {
                 const result = await api.demoLogin();
                 if (result && result.success) {
-                    try { localStorage.setItem('eap_remember_id', result.user.email || ''); } catch (e) {}
                     routeAfterAuth(result);
                     return;
                 }
-                showMsg(msgSignin, (result && result.message) || 'Demo sign-in failed.', 'error');
+                demoBtn.disabled = false;
+                demoBtn.textContent = 'One-tap Demo Access';
+                alert((result && result.message) || 'Demo sign-in failed. Please try again.');
             } catch (err) {
-                showMsg(msgSignin, 'Demo sign-in failed. Please try again.', 'error');
+                demoBtn.disabled = false;
+                demoBtn.textContent = 'One-tap Demo Access';
+                alert('Demo sign-in failed. Please try again.');
             }
-            demoBtn.disabled = false;
-            demoBtn.textContent = 'One-tap Demo Access';
         });
     </script>
 </body>
