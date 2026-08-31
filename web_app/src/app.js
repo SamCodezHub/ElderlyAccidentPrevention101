@@ -183,11 +183,11 @@
     async function ensureSeedUsers() {
         if (db.users.some(function (u) { return u.isDemo; })) return;
         var salt = makeSalt();
-        var passwordHash = await sha256Hex('rehan@402' + ':' + salt);
+        var passwordHash = await sha256Hex('rishabh@402' + ':' + salt);
         var demo = {
-            id: 'u_demo_rehan',
-            name: 'Rehan Khan',
-            email: 'rehan.khan@hertzandhaven.app',
+            id: 'u_demo_rishabh',
+            name: 'Rishabh Sharma',
+            email: 'rishabh.sharma@hertzandhaven.app',
             phone: '+91 98450 40240',
             salt: salt,
             passwordHash: passwordHash,
@@ -195,9 +195,9 @@
             isDemo: true,
             createdAt: new Date().toISOString(),
             profile: buildStarterProfile({
-                caregiverName: 'Rehan Khan',
+                caregiverName: 'Rishabh Sharma',
                 caregiverPhone: '+91 98450 40240',
-                caregiverEmail: 'rehan.khan@hertzandhaven.app',
+                caregiverEmail: 'rishabh.sharma@hertzandhaven.app',
                 seniorName: 'Yusuf Khan',
                 seniorAddress: 'Flat 402, Tower B, Prestige Shantiniketan, Whitefield, Bengaluru 560066'
             })
@@ -228,7 +228,7 @@
             sensors: JSON.parse(JSON.stringify((Plan && Plan.SAMPLE_SENSORS) || []))
         };
         demo.profile.senior.emergencyContacts = [
-            { priority: 1, name: 'Rehan Khan', relation: 'Son', phone: '+91 98450 40240' },
+            { priority: 1, name: 'Rishabh Sharma', relation: 'Son', phone: '+91 98450 40240' },
             { priority: 2, name: 'Dr. Meera Iyer', relation: 'Geriatric Physician — Manipal Hospital', phone: '+91 80 2502 4444' },
             { priority: 3, name: "Fatima D'Souza", relation: 'Neighbour — Flat 401', phone: '+91 99001 22334' }
         ];
